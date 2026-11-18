@@ -1,4 +1,4 @@
-// Multi-tenant business management and financial telemetry schema
+// Multi-tenant Dollar Buy & Sell (FX Operations) Schema
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
@@ -29,14 +29,17 @@ model Tenant {
   status             String             @default("ACTIVE") // "ACTIVE" | "SUSPENDED"
   contactEmail       String
   contactPhone       String?
-  platformFeePercent Float              @default(10.0) // Platform fee percentage (e.g. 10%)
+  clientType         String             @default("EXPORTER") // "EXPORTER", "IMPORTER", "DUAL_TRADER"
+  settlementCurrency String             @default("BDT") // Local currency for settlements (e.g. BDT ৳)
+  defaultBuyRate     Float              @default(121.50) // Benchmark Buy rate (Admin buys USD from client)
+  defaultSellRate    Float              @default(122.80) // Benchmark Sell rate (Admin sells USD to client)
+  platformFeePercent Float              @default(0.5) // Baseline margin %
   currency           String             @default("USD")
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   memberships        TenantMembership[]
   dailyRecords       DailyRecord[]
   transactions       Transaction[]
-  products           Product[]
   auditLogs          AuditLog[]
 }
 
@@ -54,19 +57,22 @@ model TenantMembership {
 }
 
 model DailyRecord {
-  id                  String        @id @default(cuid())
-  tenantId            String
-  date                String        // Format: YYYY-MM-DD
-  grossSales          Float         @default(0.0)
-  cogs                Float         @default(0.0) // Cost of Goods Sold
-  operatingExpenses   Float         @default(0.0)
-  platformFee         Float         @default(0.0) // Calculated management fee
-  netProfit           Float         @default(0.0) // grossSales - (cogs + operatingExpenses + platformFee)
-  marginPercentage    Float         @default(0.0) // (netProfit / grossSales) * 100
-  notes               String?
-  status              String        @default("RECORDED") // "RECORDED"
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                    String        @id @default(cuid())
+  tenantId              String
+  date                  String        // Format: YYYY-MM-DD
+  usdBought             Float         @default(0.0) // USD bought from client (Client sells USD)
+  buyRate               Float         @default(0.0) // Average buy rate
+  usdSold               Float         @default(0.0) // USD sold to client (Client buys USD)
+  sellRate              Float         @default(0.0) // Average sell rate
+  totalUsdVolume        Float         @default(0.0) // usdBought + usdSold
+  totalSettlementAmount Float         @default(0.0) // (usdBought * buyRate) + (usdSold * sellRate) in settlement currency
+  netUsdFlow            Float         @default(0.0) // usdBought - usdSold
+  netProfit             Float         @default(0.0) // Admin spread profit earned
+  marginPercentage      Float         @default(0.0)
+  status                String        @default("SETTLED") // "SETTLED" | "PENDING"
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   transactions Transaction[]
@@ -75,47 +81,35 @@ model DailyRecord {
 }
 
 model Transaction {
-  id            String       @id @default(cuid())
-  tenantId      String
-  dailyRecordId String?
-  type          String       // "REVENUE" | "EXPENSE"
-  category      String       // "Sales", "Ad Spend", "Inventory", "Shipping", "Payroll", "Software", "Office", "Other"
-  description   String
-  amount        Float
-  paymentStatus String       @default("COMPLETED") // "COMPLETED" | "PENDING"
-  date          String       // Format: YYYY-MM-DD
-  createdById   String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id                 String       @id @default(cuid())
+  tenantId           String
+  dailyRecordId      String?
+  tradeNumber        String?      // e.g. "FX-202611-001"
+  type               String       // "BUY_USD" (client sells USD to FynEX) | "SELL_USD" (client buys USD from FynEX)
+  usdAmount          Float        // Volume in USD ($)
+  exchangeRate       Float        // Rate applied per dollar (e.g. 122.00)
+  settlementAmount   Float        // Total payout or payment in local currency (usdAmount * exchangeRate)
+  settlementCurrency String       @default("BDT")
+  paymentMethod      String       @default("Bank Wire") // "Bank Wire", "Cash Settlement", "Payoneer / Wise", "Crypto USDT"
+  paymentStatus      String       @default("COMPLETED") // "COMPLETED" | "PENDING"
+  category           String       @default("Trade") // "Export Settlement", "Import Purchase", "Contract Payout", "Other"
+  description        String
+  reference          String?      // Bank transfer number, MT103 reference, voucher
+  date               String       // Format: YYYY-MM-DD
+  createdById        String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   dailyRecord DailyRecord? @relation(fields: [dailyRecordId], references: [id], onDelete: SetNull)
   createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
 }
 
-model Product {
-  id           String   @id @default(cuid())
-  tenantId     String
-  sku          String
-  name         String
-  category     String?
-  costPrice    Float    @default(0.0)
-  sellingPrice Float    @default(0.0)
-  stockQty     Int      @default(0)
-  status       String   @default("ACTIVE") // "ACTIVE" | "ARCHIVED"
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@unique([tenantId, sku])
-}
-
 model AuditLog {
   id         String   @id @default(cuid())
   tenantId   String?
   userId     String?
-  action     String   // "CREATE_TRANSACTION", "BATCH_ENTRY", "EDIT_TRANSACTION", "DELETE_TRANSACTION", "UPDATE_CLIENT"
+  action     String   // "CREATE_DOLLAR_TRADE", "BATCH_ENTRY", "EDIT_TRADE", "DELETE_TRADE", "UPDATE_CLIENT"
   entityType String
   entityId   String?
   details    String?  // JSON string
