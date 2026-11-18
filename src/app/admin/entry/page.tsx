@@ -3,9 +3,8 @@ import { BatchEntryGrid } from "@/components/BatchEntryGrid";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, ShieldCheck } from "lucide-react";
 
-
 export const metadata = {
-  title: "Daily Batch Entry",
+  title: "Daily Dollar Entry",
 };
 
 export default async function AdminBatchEntryPage() {
@@ -31,12 +30,16 @@ export default async function AdminBatchEntryPage() {
       id: t.id,
       name: t.name,
       slug: t.slug,
-      platformFeePercent: t.platformFeePercent,
-      currency: t.currency,
-      defaultGross: existing?.grossSales,
-      defaultCogs: existing?.cogs,
-      defaultOpex: existing?.operatingExpenses,
-      defaultNotes: existing?.notes || undefined,
+      clientType: t.clientType,
+      settlementCurrency: t.settlementCurrency,
+      defaultBuyRate: t.defaultBuyRate,
+      defaultSellRate: t.defaultSellRate,
+      usdBought: existing ? existing.usdBought : undefined,
+      buyRate: existing ? existing.buyRate : t.defaultBuyRate,
+      usdSold: existing ? existing.usdSold : undefined,
+      sellRate: existing ? existing.sellRate : t.defaultSellRate,
+      status: existing?.status || "SETTLED",
+      notes: existing?.notes || undefined,
     };
   });
 
@@ -52,19 +55,19 @@ export default async function AdminBatchEntryPage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <CalendarDays className="h-6 w-6 text-blue-600" />
-              Administrative Daily Data Entry
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-emerald-600" />
+              Daily Dollar Entry
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Enter or update daily business figures for each client. Calculations and profits update automatically.
+              Enter today&apos;s dollar amounts and rates for each client.
             </p>
           </div>
         </div>
 
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          Instant Recalculation Engine
+          Auto Calculation
         </div>
       </div>
 
