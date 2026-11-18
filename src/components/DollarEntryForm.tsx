@@ -209,172 +209,126 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
       {/* Main Form Form Grid */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Form Column */}
-        <div className="lg:col-span-8 space-y-5">
-          {/* 1. Client Selection */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs">
-            <div className="flex items-center justify-between mb-3.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                <Building2 className="h-4 w-4 text-emerald-600" />
-                <span>1. Select Client</span>
-              </label>
-              <span className="text-xs text-slate-500">
-                Choose the business partner for this trade
-              </span>
+        <div className="lg:col-span-8">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-2xs space-y-5">
+            <div className="border-b border-slate-100 pb-3">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                Transaction Details
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Fill in the client, trade direction, separate date, amounts, and settlement details below.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {clients.map((client) => {
-                const isSelected = client.id === selectedTenantId;
-                const isSeller = client.clientType === "SELLER";
-                const isBuyer = client.clientType === "BUYER";
+            {/* Row 1: Client Select & Trade Direction Select as standard dropdown form fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Form Field: Client Select */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="clientSelect"
+                  className="text-xs font-semibold text-slate-700 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Select Client</span>
+                    <span className="text-rose-500">*</span>
+                  </span>
+                  {selectedClient && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                      {selectedClient.clientType === "SELLER"
+                        ? "Sells USD"
+                        : selectedClient.clientType === "BUYER"
+                        ? "Buys USD"
+                        : "Buys & Sells"}
+                    </span>
+                  )}
+                </label>
+                <select
+                  id="clientSelect"
+                  value={selectedTenantId}
+                  onChange={(e) => handleSelectClient(e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                >
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.clientType === "SELLER" ? "Sells USD" : c.clientType === "BUYER" ? "Buys USD" : "Buys & Sells"})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                return (
-                  <button
-                    key={client.id}
-                    type="button"
-                    onClick={() => handleSelectClient(client.id)}
-                    className={`relative p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? "border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60"
+              {/* Form Field: Trade Direction Select */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="tradeDirection"
+                  className="text-xs font-semibold text-slate-700 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Trade Direction</span>
+                    <span className="text-rose-500">*</span>
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                      type === "BUY_USD"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-blue-100 text-blue-800"
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-bold text-slate-900 line-clamp-1">
-                          {client.name}
-                        </span>
-                        {isSelected && (
-                          <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                            <Check className="h-2.5 w-2.5" />
-                          </div>
-                        )}
-                      </div>
-
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide ${
-                          isSeller
-                            ? "bg-amber-100 text-amber-800"
-                            : isBuyer
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-purple-100 text-purple-800"
-                        }`}
-                      >
-                        {isSeller
-                          ? "Sells USD"
-                          : isBuyer
-                          ? "Buys USD"
-                          : "Buys & Sells USD"}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between items-center">
-                      <span>Rate:</span>
-                      <span className="font-semibold text-slate-700">
-                        ৳{isBuyer ? client.defaultSellRate.toFixed(2) : client.defaultBuyRate.toFixed(2)}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. Transaction Direction & Date */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
-                <span>2. Trade Direction & Date</span>
-              </label>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="border border-slate-200 rounded-md px-2 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
-                />
+                    {type === "BUY_USD" ? "Cash Outflow (BDT)" : "Cash Inflow (BDT)"}
+                  </span>
+                </label>
+                <select
+                  id="tradeDirection"
+                  value={type}
+                  onChange={(e) => handleToggleType(e.target.value as "BUY_USD" | "SELL_USD")}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                >
+                  <option value="BUY_USD">📥 Dollars Bought (Inflow) — Buy USD from client</option>
+                  <option value="SELL_USD">📤 Dollars Sold (Outflow) — Sell USD to client</option>
+                </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleToggleType("BUY_USD")}
-                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
-                  type === "BUY_USD"
-                    ? "border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                <div
-                  className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    type === "BUY_USD"
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  <ArrowDownLeft className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-slate-900">
-                    Dollars Bought (Inflow)
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    You receive USD, pay BDT to client
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleToggleType("SELL_USD")}
-                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
-                  type === "SELL_USD"
-                    ? "border-blue-500 bg-blue-50/60 ring-2 ring-blue-500/20"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                <div
-                  className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    type === "SELL_USD"
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  <ArrowUpRight className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-slate-900">
-                    Dollars Sold (Outflow)
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    You send USD, receive BDT from client
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* 3. Amounts & Exchange Rate */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-              <DollarSign className="h-4 w-4 text-emerald-600" />
-              <span>3. Amount & Exchange Rate</span>
-            </label>
-
+            {/* Row 2: Separate Date Field & Dollar Amount Field */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Dollar Amount */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700">
-                  Dollar Amount (USD)
+              {/* Form Field: Separate Transaction Date Field */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="transactionDate"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  <Calendar className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Transaction Date</span>
+                  <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  id="transactionDate"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                />
+                <p className="text-[11px] text-slate-400">Date this transaction took place.</p>
+              </div>
+
+              {/* Form Field: Dollar Amount (USD) */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="usdAmount"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Dollar Amount (USD)</span>
+                  <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-xs">
                     $
                   </div>
                   <input
+                    id="usdAmount"
                     type="number"
                     min="1"
                     step="any"
@@ -382,18 +336,18 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                     onChange={(e) => setUsdAmount(e.target.value)}
                     placeholder="e.g. 5000"
                     required
-                    className="w-full pl-8 pr-3 py-2.5 text-sm font-semibold text-slate-900 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                    className="w-full pl-7 pr-3 py-2 text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
                   />
                 </div>
 
                 {/* Amount quick chips */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                   {[1000, 5000, 10000, 25000].map((chip) => (
                     <button
                       key={chip}
                       type="button"
                       onClick={() => handleSetAmount(chip)}
-                      className="px-2 py-1 text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition cursor-pointer"
+                      className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition cursor-pointer"
                     >
                       ${chip.toLocaleString()}
                     </button>
@@ -402,18 +356,26 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                     key="add5k"
                     type="button"
                     onClick={() => handleAddAmount(5000)}
-                    className="px-2 py-1 text-[11px] font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md transition cursor-pointer"
+                    className="px-2 py-0.5 text-[10px] font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded transition cursor-pointer"
                   >
                     +$5,000
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Exchange Rate */}
-              <div className="space-y-2">
+            {/* Row 3: Separate Exchange Rate Field & Payment Method Field */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Form Field: Separate Exchange Rate (BDT) */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Exchange Rate (BDT)
+                  <label
+                    htmlFor="exchangeRate"
+                    className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                  >
+                    <span className="font-bold text-emerald-600 text-xs">৳</span>
+                    <span>Exchange Rate (BDT)</span>
+                    <span className="text-rose-500">*</span>
                   </label>
                   {selectedClient && (
                     <button
@@ -425,7 +387,7 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                             : selectedClient.defaultSellRate;
                         setExchangeRate(r.toFixed(2));
                       }}
-                      className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer"
+                      className="text-[10px] text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer"
                     >
                       Reset: ৳
                       {(type === "BUY_USD"
@@ -436,10 +398,11 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                   )}
                 </div>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-xs">
                     ৳
                   </div>
                   <input
+                    id="exchangeRate"
                     type="number"
                     min="1"
                     step="0.01"
@@ -447,32 +410,26 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                     onChange={(e) => setExchangeRate(e.target.value)}
                     placeholder="e.g. 122.00"
                     required
-                    className="w-full pl-8 pr-3 py-2.5 text-sm font-semibold text-slate-900 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                    className="w-full pl-7 pr-3 py-2 text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  Rate per 1 USD for this transaction.
-                </p>
+                <p className="text-[11px] text-slate-400">Rate per 1 USD for this transaction.</p>
               </div>
-            </div>
-          </div>
 
-          {/* 4. Payment & Reference Info */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-emerald-600" />
-              <span>4. Payment & Reference (Optional)</span>
-            </label>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Form Field: Payment Method */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">
-                  Payment Method
+                <label
+                  htmlFor="paymentMethod"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  <CreditCard className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Payment Method</span>
                 </label>
                 <select
+                  id="paymentMethod"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-medium text-slate-800 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
                 >
                   <option value="Bank Wire">Bank Wire Transfer</option>
                   <option value="BEFTN / EFT">BEFTN / EFT</option>
@@ -480,35 +437,52 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                   <option value="bKash / MFS">bKash / Mobile Financial Service</option>
                   <option value="Account Offset">Account Offset</option>
                 </select>
+                <p className="text-[11px] text-slate-400">Transfer channel for settlement.</p>
               </div>
+            </div>
 
+            {/* Row 4: Payment Status Field & Reference Notes Field */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Form Field: Payment Status */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">
-                  Payment Status
+                <label
+                  htmlFor="paymentStatus"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Payment Status</span>
                 </label>
                 <select
+                  id="paymentStatus"
                   value={paymentStatus}
                   onChange={(e) => setPaymentStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs font-medium text-slate-800 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
                 >
                   <option value="COMPLETED">Completed (Settled)</option>
                   <option value="PENDING">Pending Settlement</option>
                 </select>
+                <p className="text-[11px] text-slate-400">Current settlement status.</p>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                <FileText className="h-3.5 w-3.5 text-slate-400" />
-                <span>Reference Memo or Notes</span>
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. Tranche 2 export remittance, Cheque #4928"
-                className="w-full px-3 py-2 text-xs text-slate-800 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
-              />
+              {/* Form Field: Reference Notes */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="referenceNotes"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Reference Memo or Notes</span>
+                </label>
+                <input
+                  id="referenceNotes"
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g. Tranche 2 export remittance, Cheque #4928"
+                  className="w-full px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
+                />
+                <p className="text-[11px] text-slate-400">Optional internal note or reference.</p>
+              </div>
             </div>
           </div>
         </div>
