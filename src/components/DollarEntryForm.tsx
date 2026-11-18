@@ -264,7 +264,11 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                   className="text-xs font-semibold text-slate-700 flex items-center justify-between"
                 >
                   <span className="flex items-center gap-1.5">
-                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                    {type === "BUY_USD" ? (
+                      <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" />
+                    ) : (
+                      <ArrowUpRight className="h-3.5 w-3.5 text-blue-600" />
+                    )}
                     <span>Trade Direction</span>
                     <span className="text-rose-500">*</span>
                   </span>
@@ -275,7 +279,7 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                         : "bg-blue-100 text-blue-800"
                     }`}
                   >
-                    {type === "BUY_USD" ? "Cash Outflow (BDT)" : "Cash Inflow (BDT)"}
+                    {type === "BUY_USD" ? "↓ Inflow (Pay BDT)" : "↑ Outflow (Receive BDT)"}
                   </span>
                 </label>
                 <select
@@ -284,8 +288,8 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
                   onChange={(e) => handleToggleType(e.target.value as "BUY_USD" | "SELL_USD")}
                   className="w-full px-3 py-2 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-2xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-hidden"
                 >
-                  <option value="BUY_USD">📥 Dollars Bought (Inflow) — Buy USD from client</option>
-                  <option value="SELL_USD">📤 Dollars Sold (Outflow) — Sell USD to client</option>
+                  <option value="BUY_USD">↓ Buy USD (Inflow) — Buy dollars from client</option>
+                  <option value="SELL_USD">↑ Sell USD (Outflow) — Sell dollars to client</option>
                 </select>
               </div>
             </div>
