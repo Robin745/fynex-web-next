@@ -1,0 +1,126 @@
+// Multi-tenant business management and financial telemetry schema
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String             @id @default(cuid())
+  email        String             @unique
+  name         String
+  passwordHash String
+  role         String             @default("CLIENT_USER") // "SUPERADMIN" | "CLIENT_USER"
+  status       String             @default("ACTIVE") // "ACTIVE" | "SUSPENDED"
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  memberships  TenantMembership[]
+  transactions Transaction[]
+  auditLogs    AuditLog[]
+}
+
+model Tenant {
+  id                 String             @id @default(cuid())
+  name               String
+  slug               String             @unique
+  status             String             @default("ACTIVE") // "ACTIVE" | "SUSPENDED"
+  contactEmail       String
+  contactPhone       String?
+  platformFeePercent Float              @default(10.0) // Platform fee percentage (e.g. 10%)
+  currency           String             @default("USD")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  memberships        TenantMembership[]
+  dailyRecords       DailyRecord[]
+  transactions       Transaction[]
+  products           Product[]
+  auditLogs          AuditLog[]
+}
+
+model TenantMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  role      String   @default("CLIENT_ADMIN") // "CLIENT_ADMIN" | "CLIENT_VIEWER"
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+}
+
+model DailyRecord {
+  id                  String        @id @default(cuid())
+  tenantId            String
+  date                String        // Format: YYYY-MM-DD
+  grossSales          Float         @default(0.0)
+  cogs                Float         @default(0.0) // Cost of Goods Sold
+  operatingExpenses   Float         @default(0.0)
+  platformFee         Float         @default(0.0) // Calculated management fee
+  netProfit           Float         @default(0.0) // grossSales - (cogs + operatingExpenses + platformFee)
+  marginPercentage    Float         @default(0.0) // (netProfit / grossSales) * 100
+  notes               String?
+  status              String        @default("RECORDED") // "RECORDED"
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([tenantId, date])
+}
+
+model Transaction {
+  id            String       @id @default(cuid())
+  tenantId      String
+  dailyRecordId String?
+  type          String       // "REVENUE" | "EXPENSE"
+  category      String       // "Sales", "Ad Spend", "Inventory", "Shipping", "Payroll", "Software", "Office", "Other"
+  description   String
+  amount        Float
+  paymentStatus String       @default("COMPLETED") // "COMPLETED" | "PENDING"
+  date          String       // Format: YYYY-MM-DD
+  createdById   String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dailyRecord DailyRecord? @relation(fields: [dailyRecordId], references: [id], onDelete: SetNull)
+  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  tenantId     String
+  sku          String
+  name         String
+  category     String?
+  costPrice    Float    @default(0.0)
+  sellingPrice Float    @default(0.0)
+  stockQty     Int      @default(0)
+  status       String   @default("ACTIVE") // "ACTIVE" | "ARCHIVED"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sku])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  userId     String?
+  action     String   // "CREATE_TRANSACTION", "BATCH_ENTRY", "EDIT_TRANSACTION", "DELETE_TRANSACTION", "UPDATE_CLIENT"
+  entityType String
+  entityId   String?
+  details    String?  // JSON string
+  createdAt  DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
