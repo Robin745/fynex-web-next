@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { loginAction, demoLoginAction } from "@/actions/auth";
-import { BarChart3, Shield, Building2, ArrowRight } from "lucide-react";
+import { BarChart3, Shield, Building2, ArrowRight, Code2 } from "lucide-react";
 
 export const metadata = {
   title: "Sign In",
@@ -142,6 +142,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Sign In with Credentials
             </button>
           </form>
+        </div>
+
+        {/* Developer Attribution Footer */}
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-2xs text-xs text-slate-600 font-medium">
+            <Code2 className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Application Designed &amp; Developed by</span>
+            <span className="font-bold text-slate-900">Moshiur Robin</span>
+          </div>
+          <p className="mt-2 text-[11px] text-slate-400">
+            FynEX FX Currency Settlement &amp; Operations Platform
+          </p>
         </div>
       </div>
     </div>
