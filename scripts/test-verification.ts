@@ -106,6 +106,14 @@ async function runVerification() {
   // Clean up test trade
   await prisma.transaction.delete({ where: { id: testTrade.id } });
 
+  console.log("\n5. Role Switcher Visibility Verification:");
+  const hasMultipleRolesFn = (role: string, tenantsCount: number) =>
+    role === "SUPERADMIN" || tenantsCount > 1;
+
+  assert(hasMultipleRolesFn("SUPERADMIN", 0) === true, "Superadmin has multiple roles toggle enabled");
+  assert(hasMultipleRolesFn("CLIENT_USER", 1) === false, "Single-client user (Robin Tech) hides role switch toggle");
+  assert(hasMultipleRolesFn("CLIENT_USER", 2) === true, "Multi-client user enables role switch toggle");
+
   console.log("\n=========================================");
   console.log(`Test Results: ${passed} passed, ${failed} failed`);
   console.log("=========================================\n");

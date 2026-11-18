@@ -118,10 +118,10 @@ export async function Navbar({ currentTenantSlug, tenantName }: NavbarProps) {
                   </span>
                 </div>
 
-                {/* Switch to Superadmin if testing */}
-                {session.role !== "SUPERADMIN" && (
+                {/* Switch role if multiple roles available */}
+                {(session.role === "SUPERADMIN" || (session.tenants && session.tenants.length > 1)) && (
                   <Link
-                    href="/login"
+                    href="/login?switch=true"
                     className="text-xs text-slate-600 hover:text-blue-600 bg-slate-100 px-2.5 py-1.5 rounded-md hover:bg-slate-200 transition"
                   >
                     Switch Role

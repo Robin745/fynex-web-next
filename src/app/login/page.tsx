@@ -7,9 +7,16 @@ export const metadata = {
   title: "Sign In",
 };
 
-export default async function LoginPage() {
+interface LoginPageProps {
+  searchParams?: Promise<{ switch?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const isSwitching = params?.switch === "true" || params?.switch === "1";
+
   const session = await getSession();
-  if (session) {
+  if (session && !isSwitching) {
     if (session.role === "SUPERADMIN") redirect("/admin");
     if (session.tenants.length > 0) redirect(`/portal/${session.tenants[0].slug}`);
   }

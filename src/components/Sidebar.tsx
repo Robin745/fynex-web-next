@@ -71,6 +71,8 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
   }, []);
 
   const isSuperadmin = session.role === "SUPERADMIN";
+  const hasMultipleRoles =
+    isSuperadmin || (session.tenants && session.tenants.length > 1);
 
   // Navigation Links for Superadmin
   const adminNav = [
@@ -377,21 +379,27 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
           </div>
 
           <div className="flex items-center gap-1.5 pt-1">
-            <Link
-              href="/login"
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white border border-[#d6e8de] rounded-lg transition"
-            >
-              <ArrowLeftRight className="h-3 w-3" />
-              <span>Switch Role</span>
-            </Link>
+            {hasMultipleRoles && (
+              <Link
+                href="/login?switch=true"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white border border-[#d6e8de] rounded-lg transition"
+              >
+                <ArrowLeftRight className="h-3 w-3" />
+                <span>Switch Role</span>
+              </Link>
+            )}
 
-            <form action={logoutAction} className="shrink-0">
+            <form action={logoutAction} className={hasMultipleRoles ? "shrink-0" : "w-full"}>
               <button
                 type="submit"
-                className="flex items-center justify-center h-7 w-7 text-rose-600 bg-white border border-[#d6e8de] hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                className={`flex items-center justify-center ${
+                  hasMultipleRoles ? "h-7 w-7" : "w-full py-1.5 gap-1.5 text-xs font-semibold"
+                } text-rose-600 bg-white border border-[#d6e8de] hover:bg-rose-50 rounded-lg transition cursor-pointer`}
                 title="Sign out"
               >
                 <LogOut className="h-3.5 w-3.5" />
+                {!hasMultipleRoles && <span>Sign Out</span>}
               </button>
             </form>
           </div>

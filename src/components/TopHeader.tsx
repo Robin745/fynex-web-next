@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/actions/auth";
@@ -11,6 +11,8 @@ import {
   LogOut,
   ArrowLeftRight,
   ChevronRight,
+  ChevronDown,
+  Check,
   User,
 } from "lucide-react";
 
@@ -21,11 +23,37 @@ interface TopHeaderProps {
     name: string;
     slug: string;
   };
+  allTenants?: {
+    id: string;
+    name: string;
+    slug: string;
+  }[];
 }
 
-export function TopHeader({ session, currentTenant }: TopHeaderProps) {
+export function TopHeader({ session, currentTenant, allTenants }: TopHeaderProps) {
   const pathname = usePathname();
   const isSuperadmin = session.role === "SUPERADMIN";
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Only show role switcher when multiple roles/workspaces are available
+  const hasMultipleRoles =
+    isSuperadmin || (session.tenants && session.tenants.length > 1);
+
+  const availableTenants = isSuperadmin
+    ? (allTenants || [])
+    : (session.tenants || []);
 
   // Derive breadcrumb label from pathname
   let pageTitle = "Overview";
@@ -77,15 +105,94 @@ export function TopHeader({ session, currentTenant }: TopHeaderProps) {
           </div>
         </div>
 
-        {/* Switch Role Button */}
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
-          title="Switch test role"
-        >
-          <ArrowLeftRight className="h-3 w-3" />
-          <span>Switch Role</span>
-        </Link>
+        {/* Switch Role Toggle (Only shown when multiple roles are available) */}
+        {hasMultipleRoles && (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 rounded-lg transition cursor-pointer"
+              title="Switch role or workspace"
+            >
+              <ArrowLeftRight className="h-3 w-3 text-emerald-700" />
+              <span>Switch Role</span>
+              <ChevronDown
+                className={`h-3 w-3 text-slate-400 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-1.5 w-60 rounded-xl bg-white border border-slate-200 shadow-lg py-1.5 z-50 text-xs">
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Switch Workspace
+                </div>
+
+                {/* If Superadmin, option to return to central admin */}
+                {isSuperadmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className={`flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition ${
+                      !currentTenant
+                        ? "bg-amber-50/70 text-amber-900 font-bold"
+                        : "text-slate-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-3.5 w-3.5 text-amber-600" />
+                      <span>👑 Business Owner (Admin)</span>
+                    </div>
+                    {!currentTenant && <Check className="h-3.5 w-3.5 text-amber-600" />}
+                  </Link>
+                )}
+
+                {/* Available Client Accounts */}
+                {availableTenants.length > 0 && (
+                  <>
+                    <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-t border-slate-100 mt-1">
+                      Client Accounts
+                    </div>
+                    {availableTenants.map((t) => {
+                      const isCurrent = currentTenant?.slug === t.slug;
+                      return (
+                        <Link
+                          key={t.id}
+                          href={`/portal/${t.slug}`}
+                          onClick={() => setIsDropdownOpen(false)}
+                          className={`flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition ${
+                            isCurrent
+                              ? "bg-emerald-50/70 text-emerald-900 font-bold"
+                              : "text-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                            <span className="truncate">{t.name}</span>
+                          </div>
+                          {isCurrent && <Check className="h-3.5 w-3.5 text-emerald-600" />}
+                        </Link>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Switch Demo Account option */}
+                <div className="border-t border-slate-100 mt-1 pt-1">
+                  <Link
+                    href="/login?switch=true"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition text-[11px]"
+                  >
+                    <ArrowLeftRight className="h-3 w-3 text-slate-400" />
+                    <span>Switch Demo Account...</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Sign Out Button */}
         <form action={logoutAction}>
