@@ -14,7 +14,6 @@ import {
   Loader2,
   AlertCircle,
   Sparkles,
-  ArrowLeft,
   ShieldCheck,
   CreditCard,
   FileText,
@@ -179,17 +178,7 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
   return (
     <div className="space-y-6">
       {/* Action Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-700 bg-white border border-slate-200/80 px-3 py-1.5 rounded-lg shadow-2xs hover:bg-slate-50 transition"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to Overview</span>
-          </Link>
-        </div>
-
+      <div className="flex items-center justify-end">
         <button
           type="button"
           onClick={handleFillSample}
