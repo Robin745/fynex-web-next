@@ -3,23 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSuperadmin } from "@/lib/auth";
-import { calculateDailyMetrics } from "@/lib/calculations";
+import { calculateDailyDollarMetrics } from "@/lib/calculations";
 
-export interface DailyRecordInput {
+export interface DollarDailyInput {
   tenantId: string;
   date: string;
-  grossSales: number;
-  cogs: number;
-  operatingExpenses: number;
-  customPlatformFee?: number;
+  usdBought: number;
+  buyRate: number;
+  usdSold: number;
+  sellRate: number;
+  status?: string;
   notes?: string;
 }
 
 /**
- * Saves or updates a daily business record for a specific client.
- * Automatically recalculates net profit and margins.
+ * Saves or updates a daily Dollar Buy/Sell record for a specific client.
+ * Calculates settlement amounts, net flow, and operator spread.
  */
-export async function saveDailyRecordAction(input: DailyRecordInput) {
+export async function saveDollarDailyRecordAction(input: DollarDailyInput) {
   const session = await requireSuperadmin();
 
   const tenant = await db.tenant.findUnique({
@@ -27,15 +28,14 @@ export async function saveDailyRecordAction(input: DailyRecordInput) {
   });
 
   if (!tenant) {
-    return { success: false, error: "Client tenant not found." };
+    return { success: false, error: "Client not found." };
   }
 
-  const metrics = calculateDailyMetrics(
-    input.grossSales,
-    input.cogs,
-    input.operatingExpenses,
-    tenant.platformFeePercent,
-    input.customPlatformFee
+  const metrics = calculateDailyDollarMetrics(
+    input.usdBought,
+    input.buyRate || tenant.defaultBuyRate,
+    input.usdSold,
+    input.sellRate || tenant.defaultSellRate
   );
 
   const record = await db.dailyRecord.upsert({
@@ -48,59 +48,69 @@ export async function saveDailyRecordAction(input: DailyRecordInput) {
     create: {
       tenantId: input.tenantId,
       date: input.date,
-      grossSales: metrics.grossSales,
-      cogs: metrics.cogs,
-      operatingExpenses: metrics.operatingExpenses,
-      platformFee: metrics.platformFee,
+      usdBought: metrics.usdBought,
+      buyRate: metrics.buyRate,
+      usdSold: metrics.usdSold,
+      sellRate: metrics.sellRate,
+      totalUsdVolume: metrics.totalUsdVolume,
+      totalSettlementAmount: metrics.totalSettlementAmount,
+      netUsdFlow: metrics.netUsdFlow,
       netProfit: metrics.netProfit,
       marginPercentage: metrics.marginPercentage,
+      status: input.status || "SETTLED",
       notes: input.notes,
-      status: "RECORDED",
     },
     update: {
-      grossSales: metrics.grossSales,
-      cogs: metrics.cogs,
-      operatingExpenses: metrics.operatingExpenses,
-      platformFee: metrics.platformFee,
+      usdBought: metrics.usdBought,
+      buyRate: metrics.buyRate,
+      usdSold: metrics.usdSold,
+      sellRate: metrics.sellRate,
+      totalUsdVolume: metrics.totalUsdVolume,
+      totalSettlementAmount: metrics.totalSettlementAmount,
+      netUsdFlow: metrics.netUsdFlow,
       netProfit: metrics.netProfit,
       marginPercentage: metrics.marginPercentage,
+      status: input.status || "SETTLED",
       notes: input.notes,
     },
   });
 
-  // Log action
   await db.auditLog.create({
     data: {
       tenantId: tenant.id,
       userId: session.id,
-      action: "ADMIN_SET_DAILY_RECORD",
+      action: "ADMIN_SET_DOLLAR_RECORD",
       entityType: "DailyRecord",
       entityId: record.id,
       details: JSON.stringify({
         date: input.date,
-        grossSales: metrics.grossSales,
-        netProfit: metrics.netProfit,
+        volume: metrics.totalUsdVolume,
+        settlement: metrics.totalSettlementAmount,
       }),
     },
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/entry");
   revalidatePath(`/admin/clients/${tenant.slug}`);
   revalidatePath(`/portal/${tenant.slug}`);
+  revalidatePath(`/portal/${tenant.slug}/trades`);
 
   return { success: true, record };
 }
 
 /**
- * Rapid batch entry: Administrative team enters figures across all clients for a single business date.
+ * Batch entry: Administrative team enters Dollar Buy/Sell figures across all clients for a selected date.
  */
-export async function batchSaveDailyRecordsAction(
+export async function batchSaveDollarDailyAction(
   date: string,
   entries: Array<{
     tenantId: string;
-    grossSales: number;
-    cogs: number;
-    operatingExpenses: number;
+    usdBought: number;
+    buyRate: number;
+    usdSold: number;
+    sellRate: number;
+    status?: string;
     notes?: string;
   }>
 ) {
@@ -111,11 +121,11 @@ export async function batchSaveDailyRecordsAction(
     const tenant = await db.tenant.findUnique({ where: { id: entry.tenantId } });
     if (!tenant) continue;
 
-    const metrics = calculateDailyMetrics(
-      entry.grossSales,
-      entry.cogs,
-      entry.operatingExpenses,
-      tenant.platformFeePercent
+    const metrics = calculateDailyDollarMetrics(
+      entry.usdBought,
+      entry.buyRate || tenant.defaultBuyRate,
+      entry.usdSold,
+      entry.sellRate || tenant.defaultSellRate
     );
 
     const record = await db.dailyRecord.upsert({
@@ -128,22 +138,29 @@ export async function batchSaveDailyRecordsAction(
       create: {
         tenantId: entry.tenantId,
         date,
-        grossSales: metrics.grossSales,
-        cogs: metrics.cogs,
-        operatingExpenses: metrics.operatingExpenses,
-        platformFee: metrics.platformFee,
+        usdBought: metrics.usdBought,
+        buyRate: metrics.buyRate,
+        usdSold: metrics.usdSold,
+        sellRate: metrics.sellRate,
+        totalUsdVolume: metrics.totalUsdVolume,
+        totalSettlementAmount: metrics.totalSettlementAmount,
+        netUsdFlow: metrics.netUsdFlow,
         netProfit: metrics.netProfit,
         marginPercentage: metrics.marginPercentage,
+        status: entry.status || "SETTLED",
         notes: entry.notes,
-        status: "RECORDED",
       },
       update: {
-        grossSales: metrics.grossSales,
-        cogs: metrics.cogs,
-        operatingExpenses: metrics.operatingExpenses,
-        platformFee: metrics.platformFee,
+        usdBought: metrics.usdBought,
+        buyRate: metrics.buyRate,
+        usdSold: metrics.usdSold,
+        sellRate: metrics.sellRate,
+        totalUsdVolume: metrics.totalUsdVolume,
+        totalSettlementAmount: metrics.totalSettlementAmount,
+        netUsdFlow: metrics.netUsdFlow,
         netProfit: metrics.netProfit,
         marginPercentage: metrics.marginPercentage,
+        status: entry.status || "SETTLED",
         notes: entry.notes,
       },
     });
@@ -154,7 +171,7 @@ export async function batchSaveDailyRecordsAction(
   await db.auditLog.create({
     data: {
       userId: session.id,
-      action: "ADMIN_BATCH_ENTRY",
+      action: "ADMIN_BATCH_DOLLAR_ENTRY",
       entityType: "DailyRecordBatch",
       details: JSON.stringify({ date, count: results.length }),
     },
@@ -166,91 +183,76 @@ export async function batchSaveDailyRecordsAction(
 }
 
 /**
- * Update platform fee or client settings
+ * Creates an individual Dollar Trade ticket for a specific client
  */
-export async function updateClientFeeAction(tenantId: string, platformFeePercent: number) {
-  await requireSuperadmin();
+export async function createDollarTradeAction(input: {
+  tenantId: string;
+  type: "BUY_USD" | "SELL_USD";
+  usdAmount: number;
+  exchangeRate: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  category?: string;
+  description: string;
+  reference?: string;
+  date: string;
+}) {
+  const session = await requireSuperadmin();
 
-  const tenant = await db.tenant.update({
-    where: { id: tenantId },
-    data: { platformFeePercent },
+  const tenant = await db.tenant.findUnique({ where: { id: input.tenantId } });
+  if (!tenant) return { success: false, error: "Client not found." };
+
+  const settlementAmount = Number((input.usdAmount * input.exchangeRate).toFixed(2));
+  const tradeNumber = `FX-${input.date.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const trade = await db.transaction.create({
+    data: {
+      tenantId: input.tenantId,
+      tradeNumber,
+      type: input.type,
+      usdAmount: input.usdAmount,
+      exchangeRate: input.exchangeRate,
+      settlementAmount,
+      settlementCurrency: tenant.settlementCurrency,
+      paymentMethod: input.paymentMethod || "Bank Wire",
+      paymentStatus: input.paymentStatus || "COMPLETED",
+      category: input.category || (input.type === "BUY_USD" ? "USD Purchase" : "USD Sale"),
+      description: input.description,
+      reference: input.reference,
+      date: input.date,
+      createdById: session.id,
+    },
   });
 
   revalidatePath("/admin");
   revalidatePath(`/admin/clients/${tenant.slug}`);
-  return { success: true, tenant };
+  revalidatePath(`/portal/${tenant.slug}`);
+  revalidatePath(`/portal/${tenant.slug}/trades`);
+
+  return { success: true, trade };
 }
 
 /**
- * Onboard new client with initial administrator account
+ * Update client benchmark exchange rates and client type
  */
-export async function createClientAction(formData: FormData) {
-  const session = await requireSuperadmin();
+export async function updateClientRatesAction(
+  tenantId: string,
+  defaultBuyRate: number,
+  defaultSellRate: number,
+  clientType?: string
+) {
+  await requireSuperadmin();
 
-  const name = formData.get("name") as string;
-  const slug = (formData.get("slug") as string)?.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-  const contactEmail = formData.get("contactEmail") as string;
-  const contactPhone = (formData.get("contactPhone") as string) || null;
-  const platformFeePercent = parseFloat(formData.get("platformFeePercent") as string) || 10.0;
-  const adminName = formData.get("adminName") as string;
-  const adminEmail = (formData.get("adminEmail") as string)?.toLowerCase();
-
-  if (!name || !slug || !contactEmail || !adminEmail) {
-    return { success: false, error: "Missing required fields." };
-  }
-
-  const existingTenant = await db.tenant.findUnique({ where: { slug } });
-  if (existingTenant) {
-    return { success: false, error: "Client slug already in use. Please choose another." };
-  }
-
-  // Create tenant
-  const tenant = await db.tenant.create({
+  const tenant = await db.tenant.update({
+    where: { id: tenantId },
     data: {
-      name,
-      slug,
-      contactEmail,
-      contactPhone,
-      platformFeePercent,
-      currency: "USD",
-    },
-  });
-
-  // Create or link client admin user
-  const bcrypt = await import("bcryptjs");
-  const passwordHash = await bcrypt.hash("client123", 10);
-
-  let user = await db.user.findUnique({ where: { email: adminEmail } });
-  if (!user) {
-    user = await db.user.create({
-      data: {
-        name: adminName || `${name} Admin`,
-        email: adminEmail,
-        passwordHash,
-        role: "CLIENT_USER",
-      },
-    });
-  }
-
-  await db.tenantMembership.create({
-    data: {
-      userId: user.id,
-      tenantId: tenant.id,
-      role: "CLIENT_ADMIN",
-    },
-  });
-
-  await db.auditLog.create({
-    data: {
-      tenantId: tenant.id,
-      userId: session.id,
-      action: "CLIENT_ONBOARDED",
-      entityType: "Tenant",
-      entityId: tenant.id,
-      details: JSON.stringify({ name, slug }),
+      defaultBuyRate,
+      defaultSellRate,
+      clientType: clientType || undefined,
     },
   });
 
   revalidatePath("/admin");
+  revalidatePath(`/admin/clients/${tenant.slug}`);
   return { success: true, tenant };
 }

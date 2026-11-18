@@ -47,10 +47,10 @@ export async function demoLoginAction(role: "SUPERADMIN" | "CLIENT", tenantSlug?
   let email = "admin@business.com";
 
   if (role === "CLIENT") {
-    if (tenantSlug === "nexus-cloud") {
-      email = "sarah@nexus.com";
-    } else if (tenantSlug === "vanguard-freight") {
+    if (tenantSlug === "vanguard-import" || tenantSlug === "vanguard-freight") {
       email = "victor@vanguard.com";
+    } else if (tenantSlug === "horizon-media" || tenantSlug === "nexus-cloud") {
+      email = "sarah@horizon.com";
     } else {
       email = "alex@apex.com";
     }
