@@ -14,27 +14,33 @@ export interface SessionUser {
   }[];
 }
 
-export interface ClientFinancialSummary {
+export interface ClientDollarSummary {
   tenantId: string;
   tenantName: string;
   tenantSlug: string;
-  platformFeePercent: number;
-  currency: string;
-  totalGrossSales: number;
-  totalCogs: number;
-  totalOperatingExpenses: number;
-  totalPlatformFees: number;
-  totalNetProfit: number;
-  overallMarginPercent: number;
+  clientType: string;
+  settlementCurrency: string;
+  defaultBuyRate: number;
+  defaultSellRate: number;
+  totalUsdBought: number;
+  avgBuyRate: number;
+  totalUsdSold: number;
+  avgSellRate: number;
+  totalUsdVolume: number;
+  totalSettlementAmount: number;
+  totalSpreadProfit: number;
   recordsCount: number;
   lastRecordDate?: string;
 }
 
-export interface DailyLedgerCalculation {
-  grossSales: number;
-  cogs: number;
-  operatingExpenses: number;
-  platformFee: number;
+export interface DailyDollarCalculation {
+  usdBought: number;
+  buyRate: number;
+  usdSold: number;
+  sellRate: number;
+  totalUsdVolume: number;
+  totalSettlementAmount: number;
+  netUsdFlow: number;
   netProfit: number;
   marginPercentage: number;
 }

@@ -1,103 +1,150 @@
-import { DailyLedgerCalculation } from "./types";
+import { DailyDollarCalculation } from "./types";
 
 /**
- * Calculates net profit and profit margin percentage for a set of numbers.
- * Formula:
- * Net Profit = Gross Sales - (COGS + Operating Expenses + Platform Fee)
- * Margin % = (Net Profit / Gross Sales) * 100
+ * Calculates daily Dollar Buy/Sell metrics:
+ * - Total USD Volume = usdBought + usdSold
+ * - Total Settlement Value = (usdBought * buyRate) + (usdSold * sellRate)
+ * - Net USD Flow = usdBought - usdSold
+ * - Spread Profit = Estimated operator margin earned on trading volume
  */
-export function calculateDailyMetrics(
-  grossSales: number,
-  cogs: number,
-  operatingExpenses: number,
-  platformFeePercent: number,
-  customPlatformFee?: number
-): DailyLedgerCalculation {
-  const safeGross = Math.max(0, grossSales || 0);
-  const safeCogs = Math.max(0, cogs || 0);
-  const safeOpex = Math.max(0, operatingExpenses || 0);
+export function calculateDailyDollarMetrics(
+  usdBought: number,
+  buyRate: number,
+  usdSold: number,
+  sellRate: number,
+  spreadPerDollar: number = 0.85
+): DailyDollarCalculation {
+  const safeBought = Math.max(0, usdBought || 0);
+  const safeBuyRate = Math.max(0, buyRate || 0);
+  const safeSold = Math.max(0, usdSold || 0);
+  const safeSellRate = Math.max(0, sellRate || 0);
 
-  // Platform fee is either custom fixed or calculated from percentage of gross sales
-  const platformFee =
-    customPlatformFee !== undefined && customPlatformFee !== null
-      ? Math.max(0, customPlatformFee)
-      : Number(((safeGross * (platformFeePercent || 0)) / 100).toFixed(2));
+  const totalUsdVolume = Number((safeBought + safeSold).toFixed(2));
+  const totalSettlementAmount = Number(
+    ((safeBought * safeBuyRate) + (safeSold * safeSellRate)).toFixed(2)
+  );
+  const netUsdFlow = Number((safeBought - safeSold).toFixed(2));
 
-  const totalCosts = safeCogs + safeOpex + platformFee;
-  const netProfit = Number((safeGross - totalCosts).toFixed(2));
-
-  let marginPercentage = 0;
-  if (safeGross > 0) {
-    marginPercentage = Number(((netProfit / safeGross) * 100).toFixed(2));
-  } else if (netProfit < 0) {
-    marginPercentage = -100;
+  // Compute spread profit:
+  // If both buy & sell occurred, real spread is (sellRate - buyRate) on matched volume plus baseline margin
+  let netProfit = 0;
+  if (safeBought > 0 && safeSold > 0 && safeSellRate >= safeBuyRate) {
+    const matchedVolume = Math.min(safeBought, safeSold);
+    const unmatchedVolume = Math.abs(safeBought - safeSold);
+    const spreadEarned = (safeSellRate - safeBuyRate) * matchedVolume;
+    const residualSpread = unmatchedVolume * spreadPerDollar;
+    netProfit = Number((spreadEarned + residualSpread).toFixed(2));
+  } else {
+    netProfit = Number((totalUsdVolume * spreadPerDollar).toFixed(2));
   }
 
+  const benchmarkRate = safeBuyRate || safeSellRate || 122.0;
+  const marginPercentage = Number(((netProfit / (totalSettlementAmount || (totalUsdVolume * benchmarkRate || 1))) * 100).toFixed(2));
+
   return {
-    grossSales: safeGross,
-    cogs: safeCogs,
-    operatingExpenses: safeOpex,
-    platformFee,
+    usdBought: safeBought,
+    buyRate: safeBuyRate,
+    usdSold: safeSold,
+    sellRate: safeSellRate,
+    totalUsdVolume,
+    totalSettlementAmount,
+    netUsdFlow,
     netProfit,
     marginPercentage,
   };
 }
 
 /**
- * Aggregates a series of daily records into total metrics
+ * Aggregates a series of daily dollar records into overall telemetry
  */
-export function aggregateRecords(
+export function aggregateDollarRecords(
   records: Array<{
-    grossSales: number;
-    cogs: number;
-    operatingExpenses: number;
-    platformFee: number;
+    usdBought: number;
+    buyRate: number;
+    usdSold: number;
+    sellRate: number;
+    totalUsdVolume: number;
+    totalSettlementAmount: number;
+    netUsdFlow: number;
     netProfit: number;
   }>
 ) {
-  const totals = records.reduce(
-    (acc, r) => {
-      acc.grossSales += r.grossSales || 0;
-      acc.cogs += r.cogs || 0;
-      acc.operatingExpenses += r.operatingExpenses || 0;
-      acc.platformFee += r.platformFee || 0;
-      acc.netProfit += r.netProfit || 0;
-      return acc;
-    },
-    {
-      grossSales: 0,
-      cogs: 0,
-      operatingExpenses: 0,
-      platformFee: 0,
-      netProfit: 0,
-    }
-  );
+  let totalUsdBought = 0;
+  let totalBuySettlement = 0;
+  let totalUsdSold = 0;
+  let totalSellSettlement = 0;
+  let totalSpreadProfit = 0;
 
-  const roundedGross = Number(totals.grossSales.toFixed(2));
-  const roundedNet = Number(totals.netProfit.toFixed(2));
-  const overallMarginPercent =
-    roundedGross > 0
-      ? Number(((roundedNet / roundedGross) * 100).toFixed(2))
-      : 0;
+  for (const r of records) {
+    const b = r.usdBought || 0;
+    const br = r.buyRate || 0;
+    const s = r.usdSold || 0;
+    const sr = r.sellRate || 0;
+
+    totalUsdBought += b;
+    totalBuySettlement += b * br;
+    totalUsdSold += s;
+    totalSellSettlement += s * sr;
+    totalSpreadProfit += r.netProfit || 0;
+  }
+
+  const avgBuyRate = totalUsdBought > 0 ? Number((totalBuySettlement / totalUsdBought).toFixed(2)) : 0;
+  const avgSellRate = totalUsdSold > 0 ? Number((totalSellSettlement / totalUsdSold).toFixed(2)) : 0;
+  const totalUsdVolume = Number((totalUsdBought + totalUsdSold).toFixed(2));
+  const totalSettlementAmount = Number((totalBuySettlement + totalSellSettlement).toFixed(2));
+  const netUsdFlow = Number((totalUsdBought - totalUsdSold).toFixed(2));
 
   return {
-    totalGrossSales: roundedGross,
-    totalCogs: Number(totals.cogs.toFixed(2)),
-    totalOperatingExpenses: Number(totals.operatingExpenses.toFixed(2)),
-    totalPlatformFees: Number(totals.platformFee.toFixed(2)),
-    totalNetProfit: roundedNet,
-    overallMarginPercent,
+    totalUsdBought: Number(totalUsdBought.toFixed(2)),
+    avgBuyRate,
+    totalUsdSold: Number(totalUsdSold.toFixed(2)),
+    avgSellRate,
+    totalUsdVolume,
+    totalSettlementAmount,
+    netUsdFlow,
+    totalSpreadProfit: Number(totalSpreadProfit.toFixed(2)),
   };
 }
 
 /**
- * Format currency display helper
+ * Format USD volume display helper ($5,000.00)
  */
-export function formatCurrency(amount: number, currency: string = "USD"): string {
+export function formatUsd(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount || 0);
+}
+
+/**
+ * Format local currency settlement helper (৳610,000.00)
+ */
+export function formatSettlement(amount: number, currency: string = "BDT"): string {
+  if (currency === "BDT") {
+    return "৳" + new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(amount || 0);
 }
+
+/**
+ * Format FX Rate display helper (৳122.50)
+ */
+export function formatRate(rate: number, currency: string = "BDT"): string {
+  if (currency === "BDT") {
+    return `৳${(rate || 0).toFixed(2)}`;
+  }
+  return `${currency} ${(rate || 0).toFixed(2)}`;
+}
+
+// Backward compatibility helper
+export const formatCurrency = formatSettlement;
