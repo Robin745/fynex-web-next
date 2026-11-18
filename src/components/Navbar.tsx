@@ -51,41 +51,41 @@ export async function Navbar({ currentTenantSlug, tenantName }: NavbarProps) {
                 <>
                   <Link
                     href="/admin"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-md transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition"
                   >
                     <Layers className="h-4 w-4" />
-                    All Clients Dashboard
+                    FX Desk Overview
                   </Link>
                   <Link
                     href="/admin/entry"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-md transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition"
                   >
                     <CalendarDays className="h-4 w-4" />
-                    Daily Batch Entry
+                    Daily Dollar Entry
                   </Link>
                 </>
               ) : currentTenantSlug ? (
                 <>
                   <Link
                     href={`/portal/${currentTenantSlug}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-md transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition"
                   >
                     <BarChart3 className="h-4 w-4" />
-                    Financial Overview
+                    Dollar Overview
                   </Link>
                   <Link
-                    href={`/portal/${currentTenantSlug}/transactions`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-md transition"
+                    href={`/portal/${currentTenantSlug}/trades`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition"
                   >
                     <FileSpreadsheet className="h-4 w-4" />
-                    Transactions & Data Tools
+                    Buy & Sell Statements
                   </Link>
                   <Link
-                    href={`/portal/${currentTenantSlug}/inventory`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-md transition"
+                    href={`/portal/${currentTenantSlug}/calculator`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition"
                   >
                     <Package className="h-4 w-4" />
-                    Products & Catalog
+                    Rate Calculator
                   </Link>
                 </>
               ) : null}

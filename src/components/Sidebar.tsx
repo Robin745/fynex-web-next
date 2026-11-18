@@ -75,12 +75,12 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
   // Navigation Links for Superadmin
   const adminNav = [
     {
-      name: "All Clients Overview",
+      name: "Overview",
       href: "/admin",
       icon: Layers,
     },
     {
-      name: "Daily Batch Entry",
+      name: "Daily Dollar Entry",
       href: "/admin/entry",
       icon: CalendarDays,
     },
@@ -90,19 +90,19 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
   const clientNav = currentTenant
     ? [
         {
-          name: "Financial Overview",
+          name: "Overview",
           href: `/portal/${currentTenant.slug}`,
           icon: BarChart3,
         },
         {
-          name: "Transactions & Tools",
-          href: `/portal/${currentTenant.slug}/transactions`,
+          name: "Transactions",
+          href: `/portal/${currentTenant.slug}/trades`,
           icon: FileSpreadsheet,
         },
         {
-          name: "Products & Catalog",
-          href: `/portal/${currentTenant.slug}/inventory`,
-          icon: Package,
+          name: "Dollar Calculator",
+          href: `/portal/${currentTenant.slug}/calculator`,
+          icon: ArrowLeftRight,
         },
       ]
     : [];
@@ -217,7 +217,7 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
           ) : (
             <>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                Active Workspace
+                Current Account
               </span>
               <div className="flex items-center gap-2 min-w-0">
                 {currentTenant ? (
@@ -230,7 +230,7 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
                         {currentTenant.name}
                       </div>
                       <div className="text-[10px] text-slate-500 font-medium truncate">
-                        {isSuperadmin ? "Admin Inspection" : "Client Workspace"}
+                        {isSuperadmin ? "Admin View" : "Client Account"}
                       </div>
                     </div>
                   </>
@@ -241,10 +241,10 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-bold text-slate-900 truncate">
-                        Central Admin
+                        Admin
                       </div>
                       <div className="text-[10px] text-amber-700 font-semibold truncate">
-                        All Organizations
+                        All Clients
                       </div>
                     </div>
                   </>
@@ -287,29 +287,29 @@ export function Sidebar({ session, currentTenant, allTenants }: SidebarProps) {
               );
             })}
 
-            {/* Return to all clients button if in tenant view */}
+            {/* Back to all clients button if in tenant view */}
             {isSuperadmin && currentTenant && (
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                title="Return to All Clients"
+                title="Back to All Clients"
                 className={`flex items-center rounded-lg text-xs font-semibold text-slate-600 hover:text-emerald-700 hover:bg-white/70 transition ${
                   isCollapsed ? "justify-center p-2.5 my-1" : "gap-2.5 px-3 py-2"
                 }`}
               >
                 <Layers className="h-4 w-4 text-slate-400 shrink-0" />
-                {!isCollapsed && <span className="truncate">Return to All Clients</span>}
+                {!isCollapsed && <span className="truncate">Back to All Clients</span>}
               </Link>
             )}
           </nav>
 
-          {/* Quick Client Accounts List (if superadmin) */}
+          {/* Quick Clients List (if superadmin) */}
           {isSuperadmin && allTenants && allTenants.length > 0 && (
             <div className="space-y-1 pt-3 border-t border-[#d6e8de]">
               {!isCollapsed ? (
                 <>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 block mb-1.5">
-                    Client Accounts
+                    Clients
                   </span>
                   <div className="space-y-0.5">
                     {allTenants.map((t) => {

@@ -28,18 +28,18 @@ export function TopHeader({ session, currentTenant }: TopHeaderProps) {
   const isSuperadmin = session.role === "SUPERADMIN";
 
   // Derive breadcrumb label from pathname
-  let pageTitle = "Dashboard";
-  if (pathname.includes("/entry")) pageTitle = "Daily Batch Entry";
-  else if (pathname.includes("/transactions")) pageTitle = "Transactions & Data Tools";
-  else if (pathname.includes("/inventory")) pageTitle = "Products & Catalog";
-  else if (pathname.includes("/clients/")) pageTitle = "Client Telemetry";
+  let pageTitle = "Overview";
+  if (pathname.includes("/entry")) pageTitle = "Daily Dollar Entry";
+  else if (pathname.includes("/trades") || pathname.includes("/transactions")) pageTitle = "Transactions";
+  else if (pathname.includes("/calculator") || pathname.includes("/inventory")) pageTitle = "Dollar Calculator";
+  else if (pathname.includes("/clients/")) pageTitle = "Client Details";
 
   return (
     <header className="hidden lg:flex h-16 w-full items-center justify-between border-b border-[#d6e8de] bg-white px-6 sticky top-0 z-20">
       {/* Left Breadcrumb Context */}
       <div className="flex items-center gap-2 text-xs">
         <span className="font-semibold text-slate-500">
-          {currentTenant ? currentTenant.name : "Central Administration"}
+          {currentTenant ? currentTenant.name : "Admin"}
         </span>
         <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
         <span className="font-bold text-slate-900">{pageTitle}</span>
@@ -52,12 +52,12 @@ export function TopHeader({ session, currentTenant }: TopHeaderProps) {
           {isSuperadmin ? (
             <>
               <Shield className="h-3.5 w-3.5 text-amber-600" />
-              <span className="text-amber-800">Owner / Admin</span>
+              <span className="text-amber-800">Admin</span>
             </>
           ) : (
             <>
               <Building2 className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-blue-800">Client Workspace</span>
+              <span className="text-blue-800">Client</span>
             </>
           )}
         </div>
