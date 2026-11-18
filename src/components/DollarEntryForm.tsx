@@ -176,19 +176,7 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
   };
 
   return (
-    <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={handleFillSample}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/70 rounded-lg transition cursor-pointer"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Fill Sample Data</span>
-        </button>
-      </div>
-
+    <div className="space-y-4">
       {/* Status Messages */}
       {error && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-rose-800 text-xs">
@@ -210,14 +198,26 @@ export function DollarEntryForm({ clients, initialDate }: DollarEntryFormProps) 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Form Column */}
         <div className="lg:col-span-8">
-          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-2xs space-y-5">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
-                Transaction Details
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Fill in the client, trade direction, separate date, amounts, and settlement details below.
-              </p>
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-5">
+            <div className="border-b border-slate-100 pb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                  Transaction Details
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Fill in the client, trade direction, date, amounts, and settlement details.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleFillSample}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-lg transition cursor-pointer shrink-0"
+                title="Fill sample trade data for testing"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Fill Sample</span>
+              </button>
             </div>
 
             {/* Row 1: Client Select & Trade Direction Select as standard dropdown form fields */}
