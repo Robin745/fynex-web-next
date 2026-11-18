@@ -44,13 +44,14 @@ export default async function AdminBatchEntryPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Navigation Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
         <div className="flex items-center gap-3">
           <Link
             href="/admin"
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+            className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+            title="Back to Overview"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
@@ -65,9 +66,9 @@ export default async function AdminBatchEntryPage() {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          Auto Calculation
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+          <span>Auto Calculation</span>
         </div>
       </div>
 
