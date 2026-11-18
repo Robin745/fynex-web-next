@@ -65,24 +65,24 @@ async function runVerification() {
 
   assert(tenants.length >= 3, `All 3 fixed clients exist in DB (found ${tenants.length})`);
 
-  const apex = tenants.find((t) => t.slug === "apex-tech")!;
-  const vanguard = tenants.find((t) => t.slug === "vanguard-import")!;
+  const robin = tenants.find((t) => t.slug === "robin-tech")!;
+  const rigan = tenants.find((t) => t.slug === "rigan-travels")!;
 
-  assert(Boolean(apex), "Apex Tech Exporters tenant exists");
-  assert(Boolean(vanguard), "Vanguard Importers tenant exists");
+  assert(Boolean(robin), "Robin Tech tenant exists");
+  assert(Boolean(rigan), "Rigan Travels tenant exists");
 
-  // Check isolation of Apex transactions
-  const nonApexInApex = apex.transactions.some((t) => t.tenantId !== apex.id);
-  assert(!nonApexInApex, "Apex Tech trades are 100% scoped to Apex");
+  // Check isolation of Robin Tech transactions
+  const nonRobinInRobin = robin.transactions.some((t) => t.tenantId !== robin.id);
+  assert(!nonRobinInRobin, "Robin Tech trades are 100% scoped to Robin Tech");
 
-  // Check isolation of Vanguard transactions
-  const nonVanguardInVanguard = vanguard.transactions.some((t) => t.tenantId !== vanguard.id);
-  assert(!nonVanguardInVanguard, "Vanguard trades are 100% scoped to Vanguard");
+  // Check isolation of Rigan Travels transactions
+  const nonRiganInRigan = rigan.transactions.some((t) => t.tenantId !== rigan.id);
+  assert(!nonRiganInRigan, "Rigan Travels trades are 100% scoped to Rigan Travels");
 
-  // Insert test trade under Apex
+  // Insert test trade under Robin Tech
   const testTrade = await prisma.transaction.create({
     data: {
-      tenantId: apex.id,
+      tenantId: robin.id,
       tradeNumber: "TEST-FX-001",
       type: "BUY_USD",
       usdAmount: 1500,
@@ -92,16 +92,16 @@ async function runVerification() {
       paymentMethod: "Bank Wire",
       paymentStatus: "COMPLETED",
       category: "Export Payout",
-      description: "Automated Isolation Test Trade for Apex",
+      description: "Automated Isolation Test Trade for Robin Tech",
       date: "2026-11-19",
     },
   });
 
-  // Verify Vanguard CANNOT see Apex's trade
-  const vanguardQuery = await prisma.transaction.findMany({
-    where: { tenantId: vanguard.id, id: testTrade.id },
+  // Verify Rigan Travels CANNOT see Robin Tech's trade
+  const riganQuery = await prisma.transaction.findMany({
+    where: { tenantId: rigan.id, id: testTrade.id },
   });
-  assert(vanguardQuery.length === 0, "Vanguard cannot query or view Apex's trade ticket");
+  assert(riganQuery.length === 0, "Rigan Travels cannot query or view Robin Tech's trade ticket");
 
   // Clean up test trade
   await prisma.transaction.delete({ where: { id: testTrade.id } });

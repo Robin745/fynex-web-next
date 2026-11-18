@@ -20,51 +20,51 @@ async function main() {
   // 1. Create Superadmin / Business Owner
   const superadmin = await prisma.user.create({
     data: {
-      name: "Arthur Sterling (FynEX FX Desk)",
+      name: "Shajeev",
       email: "admin@business.com",
       passwordHash: adminPasswordHash,
       role: "SUPERADMIN",
       status: "ACTIVE",
     },
   });
-  console.log("✓ Created FX Desk Superadmin:", superadmin.email);
+  console.log("✓ Created Superadmin / Business Owner:", superadmin.name, `(${superadmin.email})`);
 
   // 2. Fixed Clients (Tenants)
   const fixedClients = [
     {
-      name: "Apex Tech & Software Exporters",
-      slug: "apex-tech",
-      contactEmail: "finance@apextech.io",
+      name: "Robin Tech",
+      slug: "robin-tech",
+      contactEmail: "robin@robintech.com",
       contactPhone: "+880 1712-345678",
       clientType: "EXPORTER",
       settlementCurrency: "BDT",
-      defaultBuyRate: 121.70, // Admin buys USD from Apex
+      defaultBuyRate: 121.70, // Admin buys USD from Robin Tech
       defaultSellRate: 122.50,
       platformFeePercent: 0.6,
       adminUser: {
-        name: "Alex Rivera",
-        email: "alex@apex.com",
+        name: "Robin",
+        email: "robin@robintech.com",
       },
     },
     {
-      name: "Vanguard Commercial Importers",
-      slug: "vanguard-import",
-      contactEmail: "treasury@vanguardimports.com",
+      name: "Rigan Travels",
+      slug: "rigan-travels",
+      contactEmail: "rigan@rigantravels.com",
       contactPhone: "+880 1819-876543",
       clientType: "IMPORTER",
       settlementCurrency: "BDT",
       defaultBuyRate: 122.00,
-      defaultSellRate: 123.20, // Admin sells USD to Vanguard
+      defaultSellRate: 123.20, // Admin sells USD to Rigan Travels
       platformFeePercent: 0.8,
       adminUser: {
-        name: "Victor Vance",
-        email: "victor@vanguard.com",
+        name: "Rigan",
+        email: "rigan@rigantravels.com",
       },
     },
     {
-      name: "Horizon Cloud & Media Agency",
-      slug: "horizon-media",
-      contactEmail: "ops@horizonmedia.agency",
+      name: "Rasel Atia",
+      slug: "rasel-atia",
+      contactEmail: "rasel@raselatia.com",
       contactPhone: "+880 1911-223344",
       clientType: "DUAL_TRADER",
       settlementCurrency: "BDT",
@@ -72,8 +72,8 @@ async function main() {
       defaultSellRate: 122.90,
       platformFeePercent: 0.7,
       adminUser: {
-        name: "Sarah Chen",
-        email: "sarah@horizon.com",
+        name: "Rasel Atia",
+        email: "rasel@raselatia.com",
       },
     },
   ];
@@ -148,7 +148,7 @@ async function main() {
         usdBought = dayIdx % 4 === 0 ? 800 : 0;
         buyRate = usdBought > 0 ? Number((sellRate - 0.95).toFixed(2)) : 0;
       } else {
-        // Dual trader (Agency) buys and sells USD
+        // Dual client (Buys and sells USD)
         usdBought = 2500 + (dayIdx * 400);
         buyRate = Number((tenant.defaultBuyRate + (Math.random() * 0.3 - 0.15)).toFixed(2));
         usdSold = 2000 + (dayIdx * 350);
@@ -180,7 +180,7 @@ async function main() {
           netProfit,
           marginPercentage,
           status: "SETTLED",
-          notes: `Daily FX settlement completed for ${date}. All local currency transfers verified.`,
+          notes: `Daily dollar settlement completed for ${date}. All payments verified.`,
         },
       });
 
@@ -200,7 +200,7 @@ async function main() {
             paymentMethod: "Bank Wire",
             paymentStatus: "COMPLETED",
             category: "Export Payout",
-            description: `USD Inward Payout - Wire settlement at ৳${buyRate}`,
+            description: `USD Inward Payout - Wire payment at ৳${buyRate}`,
             reference: `SWIFT/TT-${Math.floor(100000 + Math.random() * 900000)}`,
             date,
             createdById: superadmin.id,

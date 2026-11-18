@@ -49,46 +49,46 @@ export default async function LoginPage() {
               >
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-amber-600" />
-                  <span>👑 Business Owner / Admin</span>
+                  <span>👑 Business Owner / Shajeev</span>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 text-amber-600" />
               </button>
             </form>
 
-            <form action={demoLoginAction.bind(null, "CLIENT", "apex-tech")}>
+            <form action={demoLoginAction.bind(null, "CLIENT", "robin-tech")}>
               <button
                 type="submit"
                 className="w-full flex items-center justify-between p-2.5 rounded-lg border border-blue-200 bg-blue-50/70 hover:bg-blue-100/70 text-blue-900 text-xs font-bold transition cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-blue-600" />
-                  <span>🏢 Client 1: Apex Tech (Sells USD)</span>
+                  <span>🏢 Client 1: Robin Tech (Sells USD)</span>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 text-blue-600" />
               </button>
             </form>
 
-            <form action={demoLoginAction.bind(null, "CLIENT", "vanguard-import")}>
+            <form action={demoLoginAction.bind(null, "CLIENT", "rigan-travels")}>
               <button
                 type="submit"
                 className="w-full flex items-center justify-between p-2.5 rounded-lg border border-purple-200 bg-purple-50/70 hover:bg-purple-100/70 text-purple-900 text-xs font-bold transition cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-purple-600" />
-                  <span>🏢 Client 2: Vanguard (Buys USD)</span>
+                  <span>🏢 Client 2: Rigan Travels (Buys USD)</span>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 text-purple-600" />
               </button>
             </form>
 
-            <form action={demoLoginAction.bind(null, "CLIENT", "horizon-media")}>
+            <form action={demoLoginAction.bind(null, "CLIENT", "rasel-atia")}>
               <button
                 type="submit"
                 className="w-full flex items-center justify-between p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/70 text-emerald-900 text-xs font-bold transition cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-emerald-600" />
-                  <span>🏢 Client 3: Horizon (Buys & Sells)</span>
+                  <span>🏢 Client 3: Rasel Atia (Buys & Sells)</span>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
               </button>
