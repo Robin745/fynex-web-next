@@ -233,6 +233,146 @@ export async function createDollarTradeAction(input: {
 }
 
 /**
+ * Creates a daily dollar transaction entry from the admin form and automatically
+ * aggregates the client's DailyRecord for that date so all dashboards stay in sync.
+ */
+export async function createDailyDollarEntryAction(input: {
+  tenantId: string;
+  type: "BUY_USD" | "SELL_USD";
+  usdAmount: number;
+  exchangeRate: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  notes?: string;
+  date: string;
+}) {
+  const session = await requireSuperadmin();
+
+  const tenant = await db.tenant.findUnique({ where: { id: input.tenantId } });
+  if (!tenant) return { success: false, error: "Client organization not found." };
+
+  const safeUsd = Math.abs(Number(input.usdAmount) || 0);
+  const safeRate = Math.abs(Number(input.exchangeRate) || 0);
+  if (safeUsd <= 0 || safeRate <= 0) {
+    return { success: false, error: "Please enter a valid dollar amount and exchange rate." };
+  }
+
+  const settlementAmount = Number((safeUsd * safeRate).toFixed(2));
+  const tradeNumber = `FX-${input.date.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const description =
+    input.type === "BUY_USD"
+      ? `Dollars bought from ${tenant.name} at ৳${safeRate.toFixed(2)}`
+      : `Dollars sold to ${tenant.name} at ৳${safeRate.toFixed(2)}`;
+
+  // 1. Create the granular transaction record
+  const trade = await db.transaction.create({
+    data: {
+      tenantId: input.tenantId,
+      tradeNumber,
+      type: input.type,
+      usdAmount: safeUsd,
+      exchangeRate: safeRate,
+      settlementAmount,
+      settlementCurrency: tenant.settlementCurrency,
+      paymentMethod: input.paymentMethod || "Bank Wire",
+      paymentStatus: input.paymentStatus || "COMPLETED",
+      category: input.type === "BUY_USD" ? "Dollar Inflow" : "Dollar Outflow",
+      description,
+      reference: input.notes || undefined,
+      date: input.date,
+      createdById: session.id,
+    },
+  });
+
+  // 2. Query all transactions for this tenant on this date to recalculate the DailyRecord summary
+  const dayTrades = await db.transaction.findMany({
+    where: { tenantId: input.tenantId, date: input.date },
+  });
+
+  let usdBought = 0;
+  let buySettlement = 0;
+  let usdSold = 0;
+  let sellSettlement = 0;
+
+  dayTrades.forEach((t) => {
+    if (t.type === "BUY_USD") {
+      usdBought += t.usdAmount;
+      buySettlement += t.settlementAmount;
+    } else {
+      usdSold += t.usdAmount;
+      sellSettlement += t.settlementAmount;
+    }
+  });
+
+  const buyRate = usdBought > 0 ? Number((buySettlement / usdBought).toFixed(2)) : tenant.defaultBuyRate;
+  const sellRate = usdSold > 0 ? Number((sellSettlement / usdSold).toFixed(2)) : tenant.defaultSellRate;
+  const metrics = calculateDailyDollarMetrics(usdBought, buyRate, usdSold, sellRate);
+
+  await db.dailyRecord.upsert({
+    where: {
+      tenantId_date: {
+        tenantId: input.tenantId,
+        date: input.date,
+      },
+    },
+    create: {
+      tenantId: input.tenantId,
+      date: input.date,
+      usdBought: metrics.usdBought,
+      buyRate: metrics.buyRate,
+      usdSold: metrics.usdSold,
+      sellRate: metrics.sellRate,
+      totalUsdVolume: metrics.totalUsdVolume,
+      totalSettlementAmount: metrics.totalSettlementAmount,
+      netUsdFlow: metrics.netUsdFlow,
+      netProfit: metrics.netProfit,
+      marginPercentage: metrics.marginPercentage,
+      status: input.paymentStatus === "COMPLETED" ? "SETTLED" : "PENDING",
+      notes: input.notes || description,
+    },
+    update: {
+      usdBought: metrics.usdBought,
+      buyRate: metrics.buyRate,
+      usdSold: metrics.usdSold,
+      sellRate: metrics.sellRate,
+      totalUsdVolume: metrics.totalUsdVolume,
+      totalSettlementAmount: metrics.totalSettlementAmount,
+      netUsdFlow: metrics.netUsdFlow,
+      netProfit: metrics.netProfit,
+      marginPercentage: metrics.marginPercentage,
+      status: input.paymentStatus === "COMPLETED" ? "SETTLED" : "PENDING",
+      notes: input.notes || description,
+    },
+  });
+
+  // 3. Log audit action
+  await db.auditLog.create({
+    data: {
+      tenantId: tenant.id,
+      userId: session.id,
+      action: "ADMIN_CREATE_DOLLAR_ENTRY",
+      entityType: "Transaction",
+      entityId: trade.id,
+      details: JSON.stringify({
+        tradeNumber,
+        type: input.type,
+        usd: safeUsd,
+        rate: safeRate,
+        settlement: settlementAmount,
+      }),
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/entry");
+  revalidatePath(`/admin/clients/${tenant.slug}`);
+  revalidatePath(`/portal/${tenant.slug}`);
+  revalidatePath(`/portal/${tenant.slug}/trades`);
+
+  return { success: true, trade };
+}
+
+/**
  * Update client benchmark exchange rates and client type
  */
 export async function updateClientRatesAction(

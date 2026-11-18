@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { BatchEntryGrid } from "@/components/BatchEntryGrid";
+import { DollarEntryForm } from "@/components/DollarEntryForm";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, ShieldCheck } from "lucide-react";
 
@@ -15,33 +15,15 @@ export default async function AdminBatchEntryPage() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  // Fetch any existing records for today
-  const existingRecords = await db.dailyRecord.findMany({
-    where: {
-      date: todayStr,
-    },
-  });
-
-  const recordMap = new Map(existingRecords.map((r) => [r.tenantId, r]));
-
-  const clientRows = tenants.map((t) => {
-    const existing = recordMap.get(t.id);
-    return {
-      id: t.id,
-      name: t.name,
-      slug: t.slug,
-      clientType: t.clientType,
-      settlementCurrency: t.settlementCurrency,
-      defaultBuyRate: t.defaultBuyRate,
-      defaultSellRate: t.defaultSellRate,
-      usdBought: existing ? existing.usdBought : undefined,
-      buyRate: existing ? existing.buyRate : t.defaultBuyRate,
-      usdSold: existing ? existing.usdSold : undefined,
-      sellRate: existing ? existing.sellRate : t.defaultSellRate,
-      status: existing?.status || "SETTLED",
-      notes: existing?.notes || undefined,
-    };
-  });
+  const clientOptions = tenants.map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    clientType: t.clientType,
+    settlementCurrency: t.settlementCurrency,
+    defaultBuyRate: t.defaultBuyRate,
+    defaultSellRate: t.defaultSellRate,
+  }));
 
   return (
     <div className="space-y-4">
@@ -61,19 +43,19 @@ export default async function AdminBatchEntryPage() {
               Daily Dollar Entry
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Enter today&apos;s dollar amounts and rates for each client.
+              Create a new dollar transaction for client buy or sell orders.
             </p>
           </div>
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Auto Calculation</span>
+          <span>Real-time Settlement Calculation</span>
         </div>
       </div>
 
-      {/* Batch Entry Component */}
-      <BatchEntryGrid clients={clientRows} initialDate={todayStr} />
+      {/* Dollar Entry Form Component */}
+      <DollarEntryForm clients={clientOptions} initialDate={todayStr} />
     </div>
   );
 }

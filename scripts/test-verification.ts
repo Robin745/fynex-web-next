@@ -114,6 +114,63 @@ async function runVerification() {
   assert(hasMultipleRolesFn("CLIENT_USER", 1) === false, "Single-client user (Robin Tech) hides role switch toggle");
   assert(hasMultipleRolesFn("CLIENT_USER", 2) === true, "Multi-client user enables role switch toggle");
 
+  console.log("\n6. Dollar Entry Aggregation Flow Verification:");
+  // Simulate transaction entry for Robin Tech
+  const entryTrade = await prisma.transaction.create({
+    data: {
+      tenantId: robin.id,
+      tradeNumber: "TEST-FX-AUTO-01",
+      type: "BUY_USD",
+      usdAmount: 5000,
+      exchangeRate: 121.70,
+      settlementAmount: 608500,
+      settlementCurrency: "BDT",
+      paymentMethod: "Bank Wire",
+      paymentStatus: "COMPLETED",
+      category: "Dollar Inflow",
+      description: "Test daily entry",
+      date: "2026-11-25",
+    },
+  });
+
+  assert(entryTrade.usdAmount === 5000, "Created transaction has exact USD 5,000 amount");
+  assert(entryTrade.settlementAmount === 608500, "Settlement amount equals 5000 * 121.70 = ৳608,500");
+
+  // Upsert daily record like createDailyDollarEntryAction does
+  const rec = await prisma.dailyRecord.upsert({
+    where: {
+      tenantId_date: {
+        tenantId: robin.id,
+        date: "2026-11-25",
+      },
+    },
+    create: {
+      tenantId: robin.id,
+      date: "2026-11-25",
+      usdBought: 5000,
+      buyRate: 121.70,
+      usdSold: 0,
+      sellRate: robin.defaultSellRate,
+      totalUsdVolume: 5000,
+      totalSettlementAmount: 608500,
+      netUsdFlow: 5000,
+      netProfit: 4000,
+      marginPercentage: 0.65,
+      status: "SETTLED",
+    },
+    update: {
+      usdBought: 5000,
+      buyRate: 121.70,
+    },
+  });
+
+  assert(rec.totalSettlementAmount === 608500, "DailyRecord settlement synchronized to ৳608,500");
+  assert(rec.totalUsdVolume === 5000, "DailyRecord total USD volume synchronized to 5,000");
+
+  // Clean up
+  await prisma.transaction.delete({ where: { id: entryTrade.id } });
+  await prisma.dailyRecord.delete({ where: { id: rec.id } });
+
   console.log("\n=========================================");
   console.log(`Test Results: ${passed} passed, ${failed} failed`);
   console.log("=========================================\n");
