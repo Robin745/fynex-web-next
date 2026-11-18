@@ -232,46 +232,46 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
 
         {/* Daily Records History Table */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900">Daily Dollar History</h3>
-            <span className="text-xs text-slate-400">{tenant.dailyRecords.length} days recorded</span>
+          <div className="p-2.5 px-3.5 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-900">Daily Dollar History</h3>
+            <span className="text-[11px] text-slate-400">{tenant.dailyRecords.length} days recorded</span>
           </div>
 
           <div className="overflow-x-auto max-h-72 overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold sticky top-0">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold text-[11px] sticky top-0">
                 <tr>
-                  <th className="py-2.5 px-3">Date</th>
-                  <th className="py-2.5 px-3 text-right">Dollars Bought</th>
-                  <th className="py-2.5 px-3 text-center">Buy Rate</th>
-                  <th className="py-2.5 px-3 text-right">Dollars Sold</th>
-                  <th className="py-2.5 px-3 text-center">Sell Rate</th>
-                  <th className="py-2.5 px-3 text-right">Total Paid (BDT)</th>
-                  <th className="py-2.5 px-3 text-right">Profit</th>
+                  <th className="py-2 px-3">Date</th>
+                  <th className="py-2 px-3 text-right">Dollars Bought</th>
+                  <th className="py-2 px-3 text-center">Buy Rate</th>
+                  <th className="py-2 px-3 text-right">Dollars Sold</th>
+                  <th className="py-2 px-3 text-center">Sell Rate</th>
+                  <th className="py-2 px-3 text-right">Total Paid (BDT)</th>
+                  <th className="py-2 px-3 text-right">Profit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {tenant.dailyRecords.slice().reverse().map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/70">
-                    <td className="py-2.5 px-3 font-semibold text-slate-700 whitespace-nowrap">
+                    <td className="py-1.5 px-3 font-semibold text-slate-700 whitespace-nowrap">
                       {r.date}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-900">
+                    <td className="py-1.5 px-3 text-right font-bold text-slate-900">
                       {r.usdBought > 0 ? formatUsd(r.usdBought) : "—"}
                     </td>
-                    <td className="py-2.5 px-3 text-center text-emerald-800 font-semibold">
+                    <td className="py-1.5 px-3 text-center text-emerald-800 font-semibold">
                       {r.buyRate > 0 ? formatRate(r.buyRate) : "—"}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-900">
+                    <td className="py-1.5 px-3 text-right font-bold text-slate-900">
                       {r.usdSold > 0 ? formatUsd(r.usdSold) : "—"}
                     </td>
-                    <td className="py-2.5 px-3 text-center text-blue-800 font-semibold">
+                    <td className="py-1.5 px-3 text-center text-blue-800 font-semibold">
                       {r.sellRate > 0 ? formatRate(r.sellRate) : "—"}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-semibold text-slate-800">
+                    <td className="py-1.5 px-3 text-right font-semibold text-slate-800">
                       {formatSettlement(r.totalSettlementAmount, tenant.settlementCurrency)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-amber-700">
+                    <td className="py-1.5 px-3 text-right font-bold text-amber-700">
                       {formatSettlement(r.netProfit, tenant.settlementCurrency)}
                     </td>
                   </tr>
@@ -284,34 +284,34 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
 
       {/* Recent Transactions Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-900">All Transactions</h3>
-          <span className="text-xs text-slate-400">{tenant.transactions.length} recent entries</span>
+        <div className="p-2.5 px-3.5 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-xs font-bold text-slate-900">All Transactions</h3>
+          <span className="text-[11px] text-slate-400">{tenant.transactions.length} entries</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold text-[11px]">
               <tr>
-                <th className="py-2.5 px-4">Transaction ID</th>
-                <th className="py-2.5 px-4">Type</th>
-                <th className="py-2.5 px-4 text-right">USD Amount</th>
-                <th className="py-2.5 px-4 text-center">Rate</th>
-                <th className="py-2.5 px-4 text-right">Total Paid (BDT)</th>
-                <th className="py-2.5 px-4">Payment Method</th>
-                <th className="py-2.5 px-4">Status</th>
-                <th className="py-2.5 px-4">Note / Ref</th>
+                <th className="py-2 px-3">Transaction ID</th>
+                <th className="py-2 px-3">Type</th>
+                <th className="py-2 px-3 text-right">USD Amount</th>
+                <th className="py-2 px-3 text-center">Rate</th>
+                <th className="py-2 px-3 text-right">Total Paid (BDT)</th>
+                <th className="py-2 px-3">Payment Method</th>
+                <th className="py-2 px-3">Status</th>
+                <th className="py-2 px-3">Note / Ref</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {tenant.transactions.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-50/70">
-                  <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                  <td className="py-1.5 px-3 font-mono font-semibold text-slate-700">
                     {t.tradeNumber || t.id.substring(0, 10)}
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-1.5 px-3">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                         t.type === "BUY_USD"
                           ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                           : "bg-blue-50 text-blue-800 border border-blue-200"
@@ -320,24 +320,24 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                       {t.type === "BUY_USD" ? "Sold USD" : "Bought USD"}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-bold text-slate-900">
+                  <td className="py-1.5 px-3 text-right font-bold text-slate-900">
                     {formatUsd(t.usdAmount)}
                   </td>
-                  <td className="py-3 px-4 text-center font-bold text-slate-800">
+                  <td className="py-1.5 px-3 text-center font-bold text-slate-800">
                     {formatRate(t.exchangeRate)}
                   </td>
-                  <td className="py-3 px-4 text-right font-bold text-slate-900">
+                  <td className="py-1.5 px-3 text-right font-bold text-slate-900">
                     {formatSettlement(t.settlementAmount, t.settlementCurrency)}
                   </td>
-                  <td className="py-3 px-4 text-slate-600 font-medium">
+                  <td className="py-1.5 px-3 text-slate-600 font-medium">
                     {t.paymentMethod}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                      <ShieldCheck className="h-3.5 w-3.5" /> {t.paymentStatus === "COMPLETED" ? "Completed" : t.paymentStatus}
+                  <td className="py-1.5 px-3">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
+                      <ShieldCheck className="h-3 w-3" /> {t.paymentStatus === "COMPLETED" ? "Completed" : t.paymentStatus}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                  <td className="py-1.5 px-3 text-slate-500 font-mono text-[11px]">
                     {t.reference || "—"}
                   </td>
                 </tr>

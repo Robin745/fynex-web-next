@@ -135,27 +135,27 @@ export function DollarTradeTable({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search, Filter & Action Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 bg-white p-2.5 px-3.5 rounded-xl border border-slate-200 shadow-xs">
         <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
+            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
             <input
               type="text"
               placeholder="Search by number, note, date..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition"
+              className="w-full pl-8 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition"
             />
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Filter className="h-3.5 w-3.5 text-slate-400 ml-1" />
+            <Filter className="h-3 w-3 text-slate-400 ml-0.5" />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
-              className="px-2.5 py-1.5 text-xs font-medium border border-slate-200 rounded-lg focus:border-emerald-500 focus:outline-hidden bg-white text-slate-700"
+              className="px-2 py-1 text-xs font-medium border border-slate-200 rounded-lg focus:border-emerald-500 focus:outline-hidden bg-white text-slate-700"
             >
               <option value="ALL">All Types</option>
               <option value="BUY_USD">Dollars Sold (You got money)</option>
@@ -165,7 +165,7 @@ export function DollarTradeTable({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-2.5 py-1.5 text-xs font-medium border border-slate-200 rounded-lg focus:border-emerald-500 focus:outline-hidden bg-white text-slate-700"
+              className="px-2 py-1 text-xs font-medium border border-slate-200 rounded-lg focus:border-emerald-500 focus:outline-hidden bg-white text-slate-700"
             >
               <option value="ALL">All Statuses</option>
               <option value="COMPLETED">Completed</option>
@@ -179,7 +179,7 @@ export function DollarTradeTable({
             type="button"
             onClick={handleExportCsv}
             disabled={filteredTrades.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 rounded-lg shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 rounded-lg shadow-xs transition cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Export CSV</span>
@@ -189,7 +189,7 @@ export function DollarTradeTable({
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add Transaction</span>
@@ -199,36 +199,36 @@ export function DollarTradeTable({
       </div>
 
       {/* Filtered Live Summary Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-xs text-xs">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 bg-white p-2.5 px-3.5 rounded-xl border border-slate-200/90 shadow-xs text-xs">
         <div>
-          <span className="text-slate-400 block text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-slate-400 block text-[10px] font-semibold uppercase tracking-wider">
             Total Dollars
           </span>
-          <span className="text-base font-bold text-slate-900 mt-0.5 block">
+          <span className="text-sm font-bold text-slate-900 mt-0.5 block leading-tight">
             {formatUsd(totals.usdVolume)}
           </span>
         </div>
         <div>
-          <span className="text-slate-400 block text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-slate-400 block text-[10px] font-semibold uppercase tracking-wider">
             Dollars Sold
           </span>
-          <span className="text-base font-bold text-emerald-700 mt-0.5 block">
+          <span className="text-sm font-bold text-emerald-700 mt-0.5 block leading-tight">
             {formatUsd(totals.soldToFynexUsd)}
           </span>
         </div>
         <div>
-          <span className="text-slate-400 block text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-slate-400 block text-[10px] font-semibold uppercase tracking-wider">
             Dollars Bought
           </span>
-          <span className="text-base font-bold text-blue-700 mt-0.5 block">
+          <span className="text-sm font-bold text-blue-700 mt-0.5 block leading-tight">
             {formatUsd(totals.purchasedUsd)}
           </span>
         </div>
         <div>
-          <span className="text-slate-400 block text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-slate-400 block text-[10px] font-semibold uppercase tracking-wider">
             Total Amount ({currency})
           </span>
-          <span className="text-base font-bold text-slate-900 mt-0.5 block">
+          <span className="text-sm font-bold text-slate-900 mt-0.5 block leading-tight">
             {formatSettlement(totals.settlementTotal, currency)}
           </span>
         </div>
@@ -237,20 +237,20 @@ export function DollarTradeTable({
       {/* Main Streamlined 5-Column Table */}
       <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 text-[11px] uppercase tracking-wider font-semibold">
               <tr>
-                <th className="py-3 px-5">Transaction & Date</th>
-                <th className="py-3 px-4">Type & Method</th>
-                <th className="py-3 px-4 text-right">Dollars & Rate</th>
-                <th className="py-3 px-4 text-right">Total Amount ({currency})</th>
-                <th className="py-3 px-5">Note / Ref</th>
+                <th className="py-2 px-3.5">Transaction & Date</th>
+                <th className="py-2 px-3">Type & Method</th>
+                <th className="py-2 px-3 text-right">Dollars & Rate</th>
+                <th className="py-2 px-3 text-right">Total Amount ({currency})</th>
+                <th className="py-2 px-3.5">Note / Ref</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredTrades.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-400 text-xs">
+                  <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
                     No transactions match your search.
                   </td>
                 </tr>
@@ -260,19 +260,19 @@ export function DollarTradeTable({
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/60 transition group">
                       {/* Ticket & Date */}
-                      <td className="py-3.5 px-5">
-                        <div className="font-mono font-bold text-slate-900 text-xs">
+                      <td className="py-2 px-3.5">
+                        <div className="font-mono font-bold text-slate-900 text-xs leading-tight">
                           {t.tradeNumber || t.id.substring(0, 10)}
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">
+                        <div className="text-[10px] text-slate-400 leading-tight mt-0.5">
                           {t.date}
                         </div>
                       </td>
 
                       {/* Direction & Payment Method */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2 px-3">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                             isBuy
                               ? "bg-emerald-50 text-emerald-800 border border-emerald-200/70"
                               : "bg-blue-50 text-blue-800 border border-blue-200/70"
@@ -280,55 +280,55 @@ export function DollarTradeTable({
                         >
                           {isBuy ? (
                             <>
-                              <ArrowDownLeft className="h-3 w-3 text-emerald-600" />
+                              <ArrowDownLeft className="h-2.5 w-2.5 text-emerald-600" />
                               <span>Sold USD</span>
                             </>
                           ) : (
                             <>
-                              <ArrowUpRight className="h-3 w-3 text-blue-600" />
+                              <ArrowUpRight className="h-2.5 w-2.5 text-blue-600" />
                               <span>Bought USD</span>
                             </>
                           )}
                         </span>
-                        <div className="text-[11px] text-slate-500 mt-1">
+                        <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
                           {t.paymentMethod}
                         </div>
                       </td>
 
                       {/* USD Amount & Executed Rate */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-bold text-slate-900 text-xs">
+                      <td className="py-2 px-3 text-right">
+                        <div className="font-bold text-slate-900 text-xs leading-tight">
                           {formatUsd(t.usdAmount)}
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
+                        <div className="text-[10px] text-slate-500 font-medium leading-tight">
                           Rate: ৳{t.exchangeRate.toFixed(2)}
                         </div>
                       </td>
 
                       {/* Settlement & Status */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-bold text-slate-900 text-xs">
+                      <td className="py-2 px-3 text-right">
+                        <div className="font-bold text-slate-900 text-xs leading-tight">
                           {formatSettlement(t.settlementAmount, t.settlementCurrency)}
                         </div>
-                        <div className="mt-0.5">
+                        <div className="leading-tight mt-0.5">
                           {t.paymentStatus === "COMPLETED" ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700">
-                              <ShieldCheck className="h-3 w-3" /> Completed
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-700">
+                              <ShieldCheck className="h-2.5 w-2.5" /> Completed
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700">
-                              <Clock className="h-3 w-3" /> Pending
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700">
+                              <Clock className="h-2.5 w-2.5" /> Pending
                             </span>
                           )}
                         </div>
                       </td>
 
                       {/* Reference & Description */}
-                      <td className="py-3.5 px-5">
-                        <div className="font-mono text-xs text-slate-700 max-w-xs truncate">
+                      <td className="py-2 px-3.5">
+                        <div className="font-mono text-xs text-slate-700 max-w-xs truncate leading-tight">
                           {t.reference || "—"}
                         </div>
-                        <div className="text-[11px] text-slate-400 max-w-xs truncate mt-0.5">
+                        <div className="text-[10px] text-slate-400 max-w-xs truncate leading-tight mt-0.5">
                           {t.description}
                         </div>
                       </td>
@@ -341,16 +341,16 @@ export function DollarTradeTable({
         </div>
 
         {/* Table Footer */}
-        <div className="px-5 py-3 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2">
+        <div className="px-3.5 py-2 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-1.5">
           <span>
             Showing <strong>{filteredTrades.length}</strong> of <strong>{trades.length}</strong> transactions
           </span>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-3 text-[11px]">
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-500"></span> Sold: Dollars you sold to us
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Sold: Dollars you sold to us
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-blue-500"></span> Bought: Dollars you bought from us
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span> Bought: Dollars you bought from us
             </span>
           </div>
         </div>
