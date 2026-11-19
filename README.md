@@ -26,13 +26,8 @@ cd fynex-web-next
 npm install
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-### 3. Initialize Database & Seed Demo Data
+### 2. Initialize Database & Seed Demo Data
+Default local development variables are preconfigured in `.env.development`. Initialize the database:
 ```bash
 npx prisma db push
 npx tsx prisma/seed.ts
