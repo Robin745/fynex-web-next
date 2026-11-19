@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Tenant, DailyRecord } from "@prisma/client";
 import { db } from "@/lib/db";
 import { MetricCard } from "@/components/MetricCard";
 import { ClientFxTable, ClientSummaryItem } from "@/components/ClientFxTable";
@@ -28,7 +29,7 @@ export default async function AdminDashboardPage() {
   });
 
   // Calculate individual client metrics
-  const clientSummaries: ClientSummaryItem[] = tenants.map((tenant) => {
+  const clientSummaries: ClientSummaryItem[] = tenants.map((tenant: Tenant & { dailyRecords: DailyRecord[] }) => {
     const agg = aggregateDollarRecords(tenant.dailyRecords);
     const lastRecord = tenant.dailyRecords[tenant.dailyRecords.length - 1];
 

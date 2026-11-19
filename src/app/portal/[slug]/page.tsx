@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { DailyRecord } from "@prisma/client";
 import { requireTenantAccess } from "@/lib/auth";
 import { MetricCard } from "@/components/MetricCard";
 import { ClientSettlementTable, SettlementRecord } from "@/components/ClientSettlementTable";
@@ -39,7 +40,7 @@ export default async function ClientOverviewPage({ params }: PageProps) {
 
   const summary = aggregateDollarRecords(rawDailyRecords);
 
-  const dailyRecords: SettlementRecord[] = rawDailyRecords.map((r) => ({
+  const dailyRecords: SettlementRecord[] = rawDailyRecords.map((r: DailyRecord) => ({
     id: r.id,
     date: r.date,
     usdBought: r.usdBought,

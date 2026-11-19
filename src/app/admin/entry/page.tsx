@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Tenant } from "@prisma/client";
 import { DollarEntryForm } from "@/components/DollarEntryForm";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, ShieldCheck } from "lucide-react";
@@ -15,7 +16,7 @@ export default async function AdminBatchEntryPage() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  const clientOptions = tenants.map((t) => ({
+  const clientOptions = tenants.map((t: Tenant) => ({
     id: t.id,
     name: t.name,
     slug: t.slug,

@@ -1,5 +1,5 @@
 import { calculateDailyDollarMetrics, aggregateDollarRecords } from "../src/lib/calculations";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Transaction, DailyRecord, Tenant } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -65,18 +65,18 @@ async function runVerification() {
 
   assert(tenants.length >= 3, `All 3 fixed clients exist in DB (found ${tenants.length})`);
 
-  const robin = tenants.find((t) => t.slug === "robin-tech")!;
-  const rigan = tenants.find((t) => t.slug === "rigan-travels")!;
+  const robin = tenants.find((t: Tenant & { transactions: Transaction[]; dailyRecords: DailyRecord[] }) => t.slug === "robin-tech")!;
+  const rigan = tenants.find((t: Tenant & { transactions: Transaction[]; dailyRecords: DailyRecord[] }) => t.slug === "rigan-travels")!;
 
   assert(Boolean(robin), "Robin Tech tenant exists");
   assert(Boolean(rigan), "Rigan Travels tenant exists");
 
   // Check isolation of Robin Tech transactions
-  const nonRobinInRobin = robin.transactions.some((t) => t.tenantId !== robin.id);
+  const nonRobinInRobin = robin.transactions.some((t: Transaction) => t.tenantId !== robin.id);
   assert(!nonRobinInRobin, "Robin Tech trades are 100% scoped to Robin Tech");
 
   // Check isolation of Rigan Travels transactions
-  const nonRiganInRigan = rigan.transactions.some((t) => t.tenantId !== rigan.id);
+  const nonRiganInRigan = rigan.transactions.some((t: Transaction) => t.tenantId !== rigan.id);
   assert(!nonRiganInRigan, "Rigan Travels trades are 100% scoped to Rigan Travels");
 
   // Insert test trade under Robin Tech

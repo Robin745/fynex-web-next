@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Transaction } from "@prisma/client";
 import { requireTenantAccess } from "@/lib/auth";
 import { DollarTradeTable, DollarTradeItem } from "@/components/DollarTradeTable";
 import Link from "next/link";
@@ -21,7 +22,7 @@ export default async function ClientTradesPage({ params }: PageProps) {
     orderBy: { date: "desc" },
   });
 
-  const trades: DollarTradeItem[] = rawTrades.map((t) => ({
+  const trades: DollarTradeItem[] = rawTrades.map((t: Transaction) => ({
     id: t.id,
     tradeNumber: t.tradeNumber,
     type: t.type,

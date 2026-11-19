@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { Transaction } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireSuperadmin } from "@/lib/auth";
 import { calculateDailyDollarMetrics } from "@/lib/calculations";
@@ -294,7 +295,7 @@ export async function createDailyDollarEntryAction(input: {
   let usdSold = 0;
   let sellSettlement = 0;
 
-  dayTrades.forEach((t) => {
+  dayTrades.forEach((t: Transaction) => {
     if (t.type === "BUY_USD") {
       usdBought += t.usdAmount;
       buySettlement += t.settlementAmount;

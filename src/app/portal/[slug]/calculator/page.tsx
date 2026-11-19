@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { DailyRecord } from "@prisma/client";
 import { requireTenantAccess } from "@/lib/auth";
 import { FxCalculator } from "@/components/FxCalculator";
 import { formatUsd, formatSettlement } from "@/lib/calculations";
@@ -79,7 +80,7 @@ export default async function ClientCalculatorPage({ params }: PageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {historicalRecords.map((r) => (
+              {historicalRecords.map((r: DailyRecord) => (
                 <tr key={r.id} className="hover:bg-slate-50/60 transition">
                   <td className="py-3 px-5 font-semibold text-slate-800 text-xs">
                     {r.date}

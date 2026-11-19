@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import type { TenantMembership, Tenant } from "@prisma/client";
 import { db } from "./db";
 import { SessionUser, TenantRole } from "./types";
 
@@ -71,7 +72,7 @@ export async function getSession(): Promise<SessionUser | null> {
       email: user.email,
       name: user.name,
       role: user.role as "SUPERADMIN" | "CLIENT_USER",
-      tenants: user.memberships.map((m) => ({
+      tenants: user.memberships.map((m: TenantMembership & { tenant: Tenant }) => ({
         id: m.tenant.id,
         name: m.tenant.name,
         slug: m.tenant.slug,

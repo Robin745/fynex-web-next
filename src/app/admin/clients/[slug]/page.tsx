@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { DailyRecord, Transaction } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MetricCard } from "@/components/MetricCard";
@@ -251,7 +252,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {tenant.dailyRecords.slice().reverse().map((r) => (
+                {tenant.dailyRecords.slice().reverse().map((r: DailyRecord) => (
                   <tr key={r.id} className="hover:bg-slate-50/70">
                     <td className="py-1.5 px-3 font-semibold text-slate-700 whitespace-nowrap">
                       {r.date}
@@ -304,7 +305,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {tenant.transactions.map((t) => (
+              {tenant.transactions.map((t: Transaction) => (
                 <tr key={t.id} className="hover:bg-slate-50/70">
                   <td className="py-1.5 px-3 font-mono font-semibold text-slate-700">
                     {t.tradeNumber || t.id.substring(0, 10)}
