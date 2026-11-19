@@ -46,16 +46,30 @@ function ProgressBarInner() {
           if (isInternal && !isSamePage) {
             setLoading(true);
             setProgress(25);
-            const t1 = setTimeout(() => setProgress(65), 180);
-            const t2 = setTimeout(() => setProgress(85), 700);
-            return () => {
-              clearTimeout(t1);
-              clearTimeout(t2);
-            };
+            setTimeout(() => setProgress(65), 180);
+            setTimeout(() => setProgress(85), 700);
           }
         } catch {
           // Ignore invalid URLs
         }
+      }
+
+      // Intercept submit buttons and navigation action buttons
+      const button = target.closest("button");
+      if (
+        button &&
+        !button.disabled &&
+        (button.type === "submit" || button.dataset.nav === "true")
+      ) {
+        setLoading(true);
+        setProgress(30);
+        setTimeout(() => setProgress(65), 180);
+        setTimeout(() => setProgress(85), 700);
+        // Safety timeout in case navigation does not occur
+        setTimeout(() => {
+          setLoading(false);
+          setProgress(0);
+        }, 6000);
       }
     };
 
