@@ -116,11 +116,12 @@ When deploying to Netlify, configure these environment variables in your Netlify
 
 | Variable | Scope | Description |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | Builds, Functions, Runtime | Your Neon **pooled** PostgreSQL connection string. |
+| `DATABASE_URL` | Builds, Functions, Runtime | Your Neon **pooled** connection string with serverless parameters: `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require&connect_timeout=15&connection_limit=1` |
 | `JWT_SECRET` | All scopes | A secure 32+ character random secret used for production cookies. |
 
-> [!NOTE]
-> Mark both variables with **"Contains secret values"** in Netlify to ensure sensitive credentials are not exposed in build logs or UI previews.
+> [!IMPORTANT]
+> **Why `&connection_limit=1` is required in Netlify:**
+> In serverless environments, each Lambda function container should only hold **1** connection. Without `connection_limit=1`, multiple concurrent serverless functions each open 5–10 connections, quickly exhausting Neon's connection pool and causing 30–60 second query stalls.
 
 ---
 
@@ -131,12 +132,20 @@ When deploying to Netlify, configure these environment variables in your Netlify
 - Check that `?sslmode=require` is present at the end of the connection URL.
 - Verify your internet connection allows outbound port `5432`.
 
-### 2. `Table does not exist` or Login Fails Immediately
+### 2. High Latency or 1-Minute Loading Hangs on Netlify
+- **Cause 1: Using direct connection instead of pooled connection.**
+  Ensure your `DATABASE_URL` host contains `-pooler` (e.g. `ep-cool-fog-123456-pooler...`). Direct connections (without `-pooler`) quickly run out of available backend processes under serverless traffic.
+- **Cause 2: Missing `connection_limit=1`.**
+  Append `&connection_limit=1&connect_timeout=15` to your `DATABASE_URL` in Netlify environment variables.
+- **Cause 3: Neon Scale-to-Zero (Cold Start).**
+  Neon free tier automatically pauses database compute after 5 minutes of inactivity. The first request after an idle period takes 1–3 seconds to wake the database. Subsequent requests run in milliseconds.
+
+### 3. `Table does not exist` or Login Fails Immediately
 - Your database schema has not been pushed or seeded yet. Run:
   ```bash
   npx prisma db push
   npx tsx prisma/seed.ts
   ```
 
-### 3. `Datasource provider does not match URL protocol`
+### 4. `Datasource provider does not match URL protocol`
 - Ensure your connection URL starts with `postgresql://` and matches `provider = "postgresql"` in `prisma/schema.prisma`.
